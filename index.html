@@ -20,16 +20,17 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap');
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Barlow',sans-serif;background:#090E1A;color:#E8EDF5;min-height:100vh;-webkit-text-size-adjust:100%}
+    html,body{overflow-x:hidden;max-width:100vw}
+    body{font-family:'Barlow',sans-serif;background:#090E1A;color:#E8EDF5;min-height:100vh;-webkit-text-size-adjust:100%;font-size:15px}
     .ff{font-family:'Barlow Condensed',sans-serif}
-    .page{min-height:100vh;padding-bottom:80px}
+    .page{min-height:100vh;padding-bottom:80px;max-width:100vw;overflow-x:hidden}
     /* ── Acessibilidade: focus ring visível em todos os interativos ── */
     :focus-visible{outline:2px solid #CC0000;outline-offset:2px}
     button:focus-visible{outline:2px solid #FFD700;outline-offset:2px}
     /* ── Cards e labels ── */
     .card{background:linear-gradient(145deg,#141F33,#0F1927);border:1px solid #1E3050;border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 2px 10px rgba(0,0,0,.35)}
     /* Skill frontend-design: label com separador dourado via ::after */
-    .label{font-size:10px;font-weight:700;color:#C28A20;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;font-family:'Barlow Condensed',sans-serif;padding-bottom:6px}
+    .label{font-size:12px;font-weight:700;color:#C28A20;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;font-family:'Barlow Condensed',sans-serif;padding-bottom:6px}
     .label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(194,138,32,.4),transparent)}
     /* ── Formulários ── */
     input,textarea,select{display:block;width:100%;background:#090E1A;border:1.5px solid #1E3050;border-radius:8px;padding:11px 13px;color:#E8EDF5;font-size:14px;margin-bottom:8px;font-family:'Barlow',sans-serif;transition:border-color .2s}
@@ -62,8 +63,8 @@
     .veh-check{width:22px;height:22px;border-radius:50%;border:2px solid #1E3050;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:all .2s}
     .veh-card.selected .veh-check{background:#CC0000;border-color:#CC0000;color:#fff}
     /* Skill frontend-aesthetics: nome de viatura em peso 900 */
-    .veh-name{font-weight:900;font-size:15px;line-height:1.2}
-    .veh-type{font-size:11px;color:#4A6080;margin-top:2px}
+    .veh-name{font-weight:900;font-size:17px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .veh-type{font-size:13px;color:#4A6080;margin-top:2px}
     /* ── Sticky header ── */
     .sticky-hdr{position:sticky;top:0;z-index:10;padding:10px 14px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
     /* Skill frontend-aesthetics: barra de progresso com rótulo numérico */
@@ -77,14 +78,14 @@
     .item-card.ok{background:linear-gradient(145deg,#071C0F,#051509);border-color:#166534;box-shadow:0 0 10px rgba(22,163,74,.12)}
     .item-card.nc{background:linear-gradient(145deg,#1C0808,#130505);border-color:#DC2626;box-shadow:0 0 10px rgba(220,38,38,.12)}
     /* Skill frontend-aesthetics: quantidade em badge dourado */
-    .item-qty{display:inline-block;font-size:10px;font-weight:700;color:#C28A20;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px;margin-top:3px;background:rgba(194,138,32,.1);border-radius:4px;padding:1px 6px}
+    .item-qty{display:inline-block;font-size:13px;font-weight:700;color:#C28A20;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px;margin-top:3px;background:rgba(194,138,32,.1);border-radius:4px;padding:2px 7px}
     /* Skill web-design-guidelines: botões com min-height, aria-friendly */
-    .item-btn{flex:1;border-radius:8px;padding:10px 0;cursor:pointer;font-weight:800;border:2px solid #1E3050;background:#090E1A;color:#4A6080;font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:.5px;transition:all .15s;min-height:44px;touch-action:manipulation}
+    .item-btn{flex:1;border-radius:8px;padding:12px 0;cursor:pointer;font-weight:800;border:2px solid #1E3050;background:#090E1A;color:#4A6080;font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:.5px;transition:all .15s;min-height:48px;touch-action:manipulation}
     .item-btn.ok{background:#16A34A;border-color:#16A34A;color:#fff}
     .item-btn.nc{background:#DC2626;border-color:#DC2626;color:#fff}
     /* ── Barra de navegação inferior ── */
     .bottom-bar{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(to top,#07101A,#0D1825);border-top:1px solid #1E3050;padding:10px 14px;padding-bottom:max(10px,env(safe-area-inset-bottom));display:flex;gap:8px;z-index:20;box-shadow:0 -4px 16px rgba(0,0,0,.4)}
-    .nav-btn{border-radius:9px;padding:12px 0;cursor:pointer;border:none;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;letter-spacing:.5px;min-height:44px;touch-action:manipulation}
+    .nav-btn{border-radius:9px;padding:14px 0;cursor:pointer;border:none;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;letter-spacing:.5px;min-height:48px;touch-action:manipulation}
     /* ── Modal ── */
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
     .modal{background:linear-gradient(145deg,#141F33,#0D1825);border:1px solid #2A4060;border-radius:14px;padding:24px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
@@ -347,7 +348,7 @@ let selVids=VH.map(v=>v.id), responses={}, modal=null, parteLoading=false;
 let _keepScroll=false;
 let history_cbm=[];
 let _confSaved=false;
-let fbOnline=false, _fbDb=null;
+let fbOnline=false, _fbDb=null, _fbLoading=true;
 
 // ════════════════════════════════════
 //  FIREBASE — inicialização
@@ -405,11 +406,11 @@ function subscribeHistory(){
   if(!_fbDb)return;
   _fbDb.ref('historico').orderByChild('id').limitToLast(50).on('value',snap=>{
     const data=snap.val();
-    fbOnline=true;
+    fbOnline=true;_fbLoading=false;
     history_cbm=data?Object.values(data).sort((a,b)=>b.id-a.id):[];
     try{localStorage.setItem('cbm5_hist',JSON.stringify(history_cbm.slice(0,10)));}catch(e){}
-    if(screen==='history')render();
-  },()=>{fbOnline=false;});
+    if(screen==='history'||screen==='home')render();
+  },()=>{fbOnline=false;_fbLoading=false;});
 }
 // ── PIN do gestor — hash armazenado no Firebase (não no source) ──
 window.clearHistory=()=>{
@@ -632,7 +633,7 @@ ${hasResume()?`<div class="resume-banner"><div><div style="color:#4ADE80;font-we
   </div>
   ${VH.map(v=>`<div class="veh-card ${selVids.includes(v.id)?'selected':''}" onclick="toggleVeh('${v.id}')" role="checkbox" aria-checked="${selVids.includes(v.id)}" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')toggleVeh('${v.id}')" style="border-left-color:${v.color}${selVids.includes(v.id)?';border-top-color:'+v.color+';border-bottom-color:'+v.color+';border-right-color:'+v.color:''}">
     <img src="${v.img}" alt="Viatura ${esc(v.name)} — ${esc(v.type)}" style="width:80px;height:52px;object-fit:cover;border-radius:8px;flex-shrink:0;display:block">
-    <div style="flex:1">
+    <div style="flex:1;min-width:0;overflow:hidden">
       <div class="veh-name ff">${esc(v.name)}</div>
       <div class="veh-type">${esc(v.type)}</div>
     </div>
@@ -819,8 +820,7 @@ ${!semNc?`<!-- Aviso NCs -->
 <button onclick="screen='history';render()" class="btn-gray" style="margin-top:8px">📋 HISTÓRICO DE CONFERÊNCIAS</button>
 
 <div style="margin-top:20px;padding-top:16px;border-top:1px solid #1E3050">
-  <div style="font-size:10px;color:#3A5070;text-align:center;letter-spacing:2px;font-family:'Barlow Condensed',sans-serif;margin-bottom:10px">ENCERRAR TURNO</div>
-  <button onclick="novaConferencia()" style="width:100%;background:transparent;border:1px solid #1E3050;border-radius:10px;padding:14px 0;color:#4A6080;font-size:13px;font-weight:700;cursor:pointer;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;min-height:44px;touch-action:manipulation">↩ NOVA CONFERÊNCIA</button>
+  <button onclick="novaConferencia()" style="width:100%;background:linear-gradient(135deg,#1A2E1A,#0F1F0F);border:1.5px solid #166534;border-radius:10px;padding:16px 0;color:#4ADE80;font-size:16px;font-weight:800;cursor:pointer;font-family:'Barlow Condensed',sans-serif;letter-spacing:2px;min-height:52px;touch-action:manipulation">✓ CONCLUIR</button>
 </div>
 
 </div>
@@ -836,9 +836,11 @@ ${!semNc?`<!-- Aviso NCs -->
       return d.toLocaleDateString('pt-BR')+' às '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
     };
     const pctColor=p=>p===100?'#22C55E':p>=80?'#FBBF24':'#EF4444';
-    const statusBadge=fbOnline
-      ?`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(34,197,94,.15);border:1px solid #166534;border-radius:12px;padding:2px 10px;font-size:10px;color:#4ADE80;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px">● ONLINE · ${history_cbm.length} registros</span>`
-      :`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(239,68,68,.1);border:1px solid #7F1D1D;border-radius:12px;padding:2px 10px;font-size:10px;color:#FCA5A5;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px">● LOCAL · ${history_cbm.length} registros</span>`;
+    const statusBadge=_fbLoading
+      ?`<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(194,138,32,.1);border:1px solid #C28A20;border-radius:12px;padding:4px 12px;font-size:12px;color:#FFD700;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px">⏳ Carregando histórico...</span>`
+      :fbOnline
+      ?`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(34,197,94,.15);border:1px solid #166534;border-radius:12px;padding:4px 12px;font-size:12px;color:#4ADE80;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px">● ONLINE · ${history_cbm.length} registros</span>`
+      :`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(239,68,68,.1);border:1px solid #7F1D1D;border-radius:12px;padding:4px 12px;font-size:12px;color:#FCA5A5;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px">● LOCAL · ${history_cbm.length} registros</span>`;
     const cards=history_cbm.length===0
       ?`<div style="text-align:center;padding:40px 20px;color:#4A6080">
           <div style="font-size:36px;margin-bottom:12px">📋</div>
@@ -939,7 +941,7 @@ window.nextSec=()=>{
   _keepScroll=false;render();
 };
 window.prevSec=()=>{if(secIdx>0){secIdx--;_keepScroll=false;render();}};
-window.goSummary=()=>{saveToHistory();screen='summary';render();};
+window.goSummary=()=>{screen='summary';render();};
 window.goSection=i=>{secIdx=i;screen='checklist';_keepScroll=false;render();};
 window.voltarConf=()=>{screen='checklist';render();};
 window.gerarParte=gerarParte;
@@ -962,7 +964,7 @@ window.askReset=()=>{
   });
 };
 
-load();loadHistory();render();
+load();loadHistory();subscribeHistory();render();
 </script>
 </body>
 </html>
