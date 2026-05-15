@@ -411,10 +411,6 @@ function subscribeHistory(){
     if(screen==='history')render();
   },()=>{fbOnline=false;});
 }
-window.toggleHistoryNC=id=>{
-  const el=document.getElementById('hnc_'+id);
-  if(el)el.style.display=el.style.display==='none'?'block':'none';
-};
 // ── PIN do gestor — hash armazenado no Firebase (não no source) ──
 window.clearHistory=()=>{
   const overlay=document.createElement('div');
