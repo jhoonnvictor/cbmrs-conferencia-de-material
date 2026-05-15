@@ -614,7 +614,6 @@ function render(){
   <p style="font-size:10px;color:rgba(255,255,255,.55);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px">Quartel CB São Marcos · 2026</p>
   <div class="hero-pills">
     <span class="hero-pill"><time datetime="${new Date().toISOString().slice(0,10)}">${new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}</time></span>
-    <span class="hero-pill">Turno ${(() => { const h=new Date().getHours(); return h<14?'01':h<20?'02':'03'; })()}</span>
   </div>
 </header>
 <div style="padding:14px">
@@ -937,7 +936,7 @@ window.nextSec=()=>{
   const secs=getAct(),sec=secs[secIdx];
   const ncSemObs=sec?.items.some((_,i)=>{const r=responses[`${sec.id}_${i}`];return r?.status==='nc'&&!r?.obs?.trim();});
   if(ncSemObs){showModal({title:'⚠ Observação pendente',msg:'Há item(ns) N/C sem descrição. Preencha antes de avançar.',confirmLabel:'OK',cancelLabel:'',callback:null});return;}
-  if(secIdx+1>=secs.length){saveToHistory();screen='done';}else secIdx++;
+  if(secIdx+1>=secs.length){screen='done';}else secIdx++;
   _keepScroll=false;render();
 };
 window.prevSec=()=>{if(secIdx>0){secIdx--;_keepScroll=false;render();}};
@@ -946,7 +945,11 @@ window.goSection=i=>{secIdx=i;screen='checklist';_keepScroll=false;render();};
 window.voltarConf=()=>{screen='checklist';render();};
 window.gerarParte=gerarParte;
 window.gerarRelatorio=gerarRelatorio;
-window.novaConferencia=()=>{
+window.novaConferencia=async()=>{
+  // Salva a conferência ao clicar CONCLUIR
+  const btn=document.querySelector('[onclick="novaConferencia()"]');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Salvando...';}
+  await saveToHistory();
   responses={};secIdx=0;ident={name:'',guerra:'',rank:'',re:''};
   selVids=VH.map(v=>v.id);screen='home';_confSaved=false;
   try{localStorage.removeItem(LS.R);localStorage.removeItem(LS.I);localStorage.removeItem(LS.V);}catch(_){}
