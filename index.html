@@ -123,7 +123,7 @@ const FB_CFG = {
   messagingSenderId: "883002740573",
   appId: "1:883002740573:web:b2a72e62b655c64d5422b4"
 };
-firebase.initializeApp(FB_CFG);
+try { if(!firebase.apps.length) firebase.initializeApp(FB_CFG); } catch(e){ console.error('Firebase init:',e); }
 const fbAuth = firebase.auth();
 const fbDb   = firebase.database();
 const ADMIN_EMAIL = 'jvictor.projetos.ti@gmail.com';
@@ -1038,7 +1038,16 @@ window.askReset=()=>{showModal({title:'⚠ Nova Conferência',msg:'Todos os dado
 //  AUTH STATE LISTENER — Inicialização
 // ════════════════════════════════════
 renderAuth(); // Exibe spinner imediatamente enquanto Firebase verifica sessão
+
+// Timeout de segurança: se Firebase não responder em 8s, mostra tela de login
+const _authTimeout = setTimeout(()=>{
+  if(authState==='loading'){
+    authState='login'; authError='Tempo esgotado. Verifique sua conexão.'; renderAuth();
+  }
+}, 8000);
+
 fbAuth.onAuthStateChanged(async user=>{
+  clearTimeout(_authTimeout);
   if(!user){
     currentUser=null;userProfile=null;
     authState='login';authLoading=false;authError='';
