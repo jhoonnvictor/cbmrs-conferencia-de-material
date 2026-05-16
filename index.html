@@ -175,7 +175,20 @@ window.signInEmail = async()=>{
   if(!em||!pw){authError='Preencha e-mail e senha.';renderAuth();return;}
   authLoading=true;authError='';renderAuth();
   try{await fbAuth.signInWithEmailAndPassword(em,pw);}
-  catch(e){authError='E-mail ou senha incorretos.';authLoading=false;renderAuth();}
+  catch(e){
+    console.error('[Auth] signInEmail:',e.code,e.message);
+    const _m={
+      'auth/invalid-credential':'E-mail ou senha incorretos.',
+      'auth/user-not-found':'E-mail não cadastrado.',
+      'auth/wrong-password':'Senha incorreta.',
+      'auth/too-many-requests':'Muitas tentativas. Aguarde e tente novamente.',
+      'auth/operation-not-allowed':'Login por e-mail não habilitado no Firebase. Contate o administrador.',
+      'auth/unauthorized-domain':'Domínio não autorizado no Firebase. Contate o administrador.',
+      'auth/network-request-failed':'Erro de rede. Verifique sua conexão.',
+    };
+    authError=(_m[e.code]||'Erro ['+e.code+']. Contate o administrador.');
+    authLoading=false;renderAuth();
+  }
 };
 window.registerEmail = async()=>{
   const em=document.getElementById('reg_email')?.value?.trim();
@@ -187,7 +200,16 @@ window.registerEmail = async()=>{
   authLoading=true;authError='';renderAuth();
   try{await fbAuth.createUserWithEmailAndPassword(em,pw);}
   catch(e){
-    authError=e.code==='auth/email-already-in-use'?'Este e-mail já está cadastrado.':'Erro ao cadastrar. Tente novamente.';
+    console.error('[Auth] registerEmail:',e.code,e.message);
+    const _m={
+      'auth/email-already-in-use':'Este e-mail já está cadastrado.',
+      'auth/operation-not-allowed':'Cadastro por e-mail não habilitado no Firebase. Contate o administrador.',
+      'auth/unauthorized-domain':'Domínio não autorizado no Firebase. Contate o administrador.',
+      'auth/weak-password':'Senha muito fraca. Use ao menos 6 caracteres.',
+      'auth/invalid-email':'E-mail inválido.',
+      'auth/network-request-failed':'Erro de rede. Verifique sua conexão.',
+    };
+    authError=(_m[e.code]||'Erro ['+e.code+']. Contate o administrador.');
     authLoading=false;renderAuth();
   }
 };
@@ -539,7 +561,7 @@ const SC=[
 // ════════════════════════════════════
 let screen='home', secIdx=0;
 let ident={name:'',guerra:'',rank:'',re:''};
-let selVids=VH.map(v=>v.id), responses={}, modal=null;
+let selVids=VH.map(v=>v.id), responses={}, modal=null, parteLoading=false;
 // FIX: flag para controlar scroll — só reseta ao mudar de seção
 let _keepScroll=false;
 let history_cbm=[];
@@ -567,13 +589,13 @@ async function saveToHistory(){
   history_cbm.unshift(entry);
   if(history_cbm.length>10)history_cbm.pop();
   try{localStorage.setItem('cbm5_hist',JSON.stringify(history_cbm));}catch(e){}
-  try{await fbDb.ref('historico/'+entry.id).set(entry);}catch(e){}
+  try{await fbDb.ref('historico').set(history_cbm);}catch(e){}
 }
 async function loadHistory(){
   try{
-    const snap=await fbDb.ref('historico').orderByChild('id').limitToLast(10).once('value');
+    const snap=await fbDb.ref('historico').once('value');
     const d=snap.val();
-    if(d){history_cbm=Object.values(d).sort((a,b)=>b.id-a.id);}
+    if(d){history_cbm=Array.isArray(d)?d:Object.values(d);}
     try{localStorage.setItem('cbm5_hist',JSON.stringify(history_cbm));}catch(e){}
   }catch(e){
     try{const h=localStorage.getItem('cbm5_hist');if(h)history_cbm=JSON.parse(h);}catch(e2){}
@@ -587,7 +609,7 @@ window.clearHistory=async()=>{
   if(!confirm('Apagar todo o histórico de conferências?'))return;
   history_cbm=[];
   try{localStorage.removeItem('cbm5_hist');}catch(e){}
-  try{await fbDb.ref('historico').remove();}catch(e){}
+  try{await fbDb.ref('historico').set([]);}catch(e){}
   render();
 };
 
@@ -868,7 +890,7 @@ ${getAct().map((s,i)=>{const sp=secProg(s),veh=VH.find(v=>v.id===s.vid),p=sp.tot
 ${ncs.length?`<div class="card" style="border-left:3px solid #DC2626"><div class="label" style="color:#EF4444">Não Conformidades (${ncs.length})</div>${ncs.map(nc=>`<div class="nc-item"><div style="font-size:11px;color:#EF4444">${nc.veh==='SOP'?'Sala':esc(nc.veh)} — ${esc(nc.sec)}</div><div style="font-weight:600;font-size:14px">${esc(nc.name)}</div>${nc.obs?`<div style="font-size:11px;color:#FCA5A5;margin-top:4px">› ${esc(nc.obs)}</div>`:''}</div>`).join('')}</div>`:''}
 <button onclick="gerarRelatorio()" class="btn-red">📥 GERAR RELATÓRIO (HTML)</button>
 ${(()=>{const _prev=history_cbm.length>1?history_cbm[1]:null;const _reps=_prev?ncs.filter(nc=>_prev.ncs.some(p=>p.veh===nc.veh&&p.sec===nc.sec&&p.name===nc.name)):[];return _reps.length?`<div style="background:#1C1408;border:1px solid #854D0E;border-radius:8px;padding:10px;margin-bottom:8px;font-size:12px;color:#FDE68A">⚠ ${_reps.length} NC(s) já reportada(s) na conferência anterior. Serão indicadas no documento Word.</div>`:'';})()}
-${ncs.length?`<button onclick="gerarParte()" class="btn-gold">📄 GERAR PARTE (Word) — ${ncs.length} N/C(s)</button>`:''}
+${ncs.length?`<button onclick="gerarParte()" class="btn-gold" >${parteLoading?'<span class="spinner"></span>Gerando Parte com IA...':'📄 GERAR PARTE (Word) — '+ncs.length+' N/C(s)'}</button>`:''}
 <button onclick="voltarConf()" class="btn-gray">← RETORNAR À CONFERÊNCIA</button>
 <button onclick="askReset()" class="btn-gray" style="margin-top:6px;color:#EF4444;border-color:#7F1D1D">🗑 NOVA CONFERÊNCIA</button>
 </div></div>`;
@@ -982,6 +1004,7 @@ ${ncs.length?`<button onclick="gerarParte()" class="btn-gold">📄 GERAR PARTE (
 //  AÇÕES GLOBAIS
 // ════════════════════════════════════
 window.toggleAll=()=>{selVids=selVids.length===VH.length?[]:VH.map(v=>v.id);render();};
+window.toggleHistoryNC=id=>{const el=document.getElementById('hnc_'+id);if(el)el.style.display=el.style.display==='none'?'block':'none';};
 window.toggleVeh=v=>{selVids=selVids.includes(v)?selVids.filter(x=>x!==v):[...selVids,v];render();};
 window.startNew=()=>{if(!selVids.length||!identOk())return;responses={};secIdx=0;screen='checklist';_keepScroll=false;_confSaved=false;save();render();};
 window.retomar=()=>{
