@@ -291,35 +291,64 @@ function renderAuth(){
 //  ADMIN — Painel
 // ════════════════════════════════════
 window.loadAdmin=async()=>{
-  const snap=await fbDb.ref('usuarios').once('value');
-  allUsers=[];
-  snap.forEach(c=>{allUsers.push({uid:c.key,...c.val()});});
-  screen='admin';render();
+  const btn=document.querySelector('[onclick="loadAdmin()"]');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Carregando...';}
+  try{
+    const snap=await fbDb.ref('usuarios').once('value');
+    allUsers=[];
+    snap.forEach(c=>{allUsers.push({uid:c.key,...c.val()});});
+    screen='admin';render();
+  }catch(e){
+    console.error('Erro ao carregar painel admin:',e);
+    const msg=e?.code==='PERMISSION_DENIED'
+      ?'Sem permissão no banco de dados.\nAtualize as Regras do Firebase (veja o console).'
+      :'Erro ao carregar painel: '+e.message;
+    alert('⚠️ '+msg);
+    if(btn){btn.disabled=false;btn.textContent='⚙️ PAINEL ADMINISTRADOR';}
+  }
 };
+// Guard de permissão local — impede chamada direta pelo console do browser
+function _assertAdmin(fn){
+  if(!userProfile?.admin){
+    alert('⛔ Acesso negado. Apenas administradores podem executar esta ação.');
+    console.warn('Tentativa de acesso admin bloqueada localmente. userProfile:',userProfile);
+    return false;
+  }
+  return true;
+}
 window.approveUser=async(uid)=>{
+  if(!_assertAdmin('approveUser'))return;
   const nome=document.getElementById('adm_nome_'+uid)?.value?.trim();
   const guerra=document.getElementById('adm_guerra_'+uid)?.value?.trim();
   const rank=document.getElementById('adm_rank_'+uid)?.value;
   const re=document.getElementById('adm_re_'+uid)?.value?.trim();
   if(!nome||!rank){alert('Preencha ao menos Nome Completo e Graduação.');return;}
-  await fbDb.ref('usuarios/'+uid).update({nome,guerra,rank,re,aprovado:true});
-  alert('Acesso liberado com sucesso!');
-  await window.loadAdmin();
+  try{
+    await fbDb.ref('usuarios/'+uid).update({nome,guerra,rank,re,aprovado:true});
+    alert('Acesso liberado com sucesso!');
+    await window.loadAdmin();
+  }catch(e){alert('Erro ao aprovar: '+e.message);console.error(e);}
 };
 window.revokeUser=async(uid)=>{
+  if(!_assertAdmin('revokeUser'))return;
   if(!confirm('Revogar acesso deste militar?'))return;
-  await fbDb.ref('usuarios/'+uid).update({aprovado:false});
-  await window.loadAdmin();
+  try{
+    await fbDb.ref('usuarios/'+uid).update({aprovado:false});
+    await window.loadAdmin();
+  }catch(e){alert('Erro ao revogar: '+e.message);console.error(e);}
 };
 window.updateUserProfile=async(uid)=>{
+  if(!_assertAdmin('updateUserProfile'))return;
   const nome=document.getElementById('adm_nome_'+uid)?.value?.trim();
   const guerra=document.getElementById('adm_guerra_'+uid)?.value?.trim();
   const rank=document.getElementById('adm_rank_'+uid)?.value;
   const re=document.getElementById('adm_re_'+uid)?.value?.trim();
   if(!nome||!rank){alert('Preencha ao menos Nome Completo e Graduação.');return;}
-  await fbDb.ref('usuarios/'+uid).update({nome,guerra,rank,re});
-  alert('Perfil atualizado!');
-  await window.loadAdmin();
+  try{
+    await fbDb.ref('usuarios/'+uid).update({nome,guerra,rank,re});
+    alert('Perfil atualizado!');
+    await window.loadAdmin();
+  }catch(e){alert('Erro ao atualizar: '+e.message);console.error(e);}
 };
 
 
@@ -596,15 +625,12 @@ async function loadHistory(){
     try{const h=localStorage.getItem('cbm5_hist');if(h)history_cbm=JSON.parse(h);}catch(e2){}
   }
 }
-window.toggleHistoryNC=id=>{
-  const el=document.getElementById('hnc_'+id);
-  if(el)el.style.display=el.style.display==='none'?'block':'none';
-};
 window.clearHistory=async()=>{
+  if(!_assertAdmin('clearHistory'))return;
   if(!confirm('Apagar todo o histórico de conferências?'))return;
   history_cbm=[];
   try{localStorage.removeItem('cbm5_hist');}catch(e){}
-  try{await fbDb.ref('historico').set([]);}catch(e){}
+  try{await fbDb.ref('historico').set([]);}catch(e){console.error('Erro ao limpar histórico no Firebase:',e);}
   render();
 };
 
