@@ -9,7 +9,7 @@
                  script-src 'self' 'unsafe-inline' https://www.gstatic.com;
                  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
                  font-src https://fonts.gstatic.com;
-                 connect-src https://api.anthropic.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://cbmrs-ti-default-rtdb.firebaseio.com wss://cbmrs-ti-default-rtdb.firebaseio.com https://cbmrs-ti.firebaseio.com;
+                 connect-src https://api.anthropic.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://cbmrs-ti-default-rtdb.firebaseio.com wss://cbmrs-ti-default-rtdb.firebaseio.com https://cbmrs-ti.firebaseio.com https://www.gstatic.com;
                  frame-src https://cbmrs-ti.firebaseapp.com https://accounts.google.com;
                  img-src 'self' data: https://*.googleusercontent.com;
                  object-src 'none'">
@@ -555,7 +555,7 @@ const SC=[
 //  ESTADO
 // ════════════════════════════════════
 let screen='home', secIdx=0;
-let 
+let ident={name:'',guerra:'',rank:'',re:''};
 let selVids=VH.map(v=>v.id), responses={}, modal=null, parteLoading=false;
 // FIX: flag para controlar scroll — só reseta ao mudar de seção
 let _keepScroll=false;
@@ -790,7 +790,7 @@ ${hasResume()?`<div class="resume-banner"><div><div style="color:#4ADE80;font-we
 ${userProfile?.admin?`<button onclick="loadAdmin()" class="btn-gray" style="margin-bottom:4px;border-color:#C28A20;color:#C28A20">⚙️ PAINEL ADMINISTRADOR</button>`:''}
 <div class="card">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-    <div class="label" style="margin:0">Veículos / Equipamentos</span>
+    <div class="label" style="margin:0">Veículos / Equipamentos</div>
     <button onclick="toggleAll()" class="btn-sm">${selVids.length===VH.length?'Desmarcar Todos':'Selecionar Todos'}</button>
   </div>
   ${VH.map(v=>`<div class="veh-card ${selVids.includes(v.id)?'selected':''}" onclick="toggleVeh('${v.id}')" role="checkbox" aria-checked="${selVids.includes(v.id)}" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')toggleVeh('${v.id}')" style="border-left-color:${v.color}${selVids.includes(v.id)?';border-top-color:'+v.color+';border-bottom-color:'+v.color+';border-right-color:'+v.color:''}">
@@ -883,7 +883,7 @@ ${ncs.length?`<div style="color:#EF4444;margin-top:6px;font-size:13px">⚠ ${ncs
 <div class="card"><div class="label">Progresso por Seção</div>
 ${getAct().map((s,i)=>{const sp=secProg(s),veh=VH.find(v=>v.id===s.vid),p=sp.total?Math.round(sp.done/sp.total*100):0;return`<div onclick="goSection(${i})" style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;cursor:pointer;margin-bottom:4px;background:${p===100?'#071C0F':'#0A111E'};border:1px solid ${p===100?'#166534':'#1E3050'}"><span style="font-size:14px">${s.icon}</span><div style="flex:1"><div style="font-size:12px;font-weight:700">${esc(veh.name)} — ${esc(s.title)}</div><div style="height:3px;background:#1E3050;border-radius:2px;margin-top:4px"><div style="height:3px;background:${p===100?'#22C55E':'#CC0000'};border-radius:2px;width:${p}%"></div></div></div><div style="font-size:11px;color:#4A6080;white-space:nowrap">${sp.done}/${sp.total}</div></div>`;}).join('')}
 </div>
-${ncs.length?`<div class="card" style="border-left:3px solid #DC2626"><div class="label" style="color:#EF4444">Não Conformidades (${ncs.length})</span>${ncs.map(nc=>`<div class="nc-item"><div style="font-size:11px;color:#EF4444">${nc.veh==='SOP'?'Sala':esc(nc.veh)} — ${esc(nc.sec)}</div><div style="font-weight:600;font-size:14px">${esc(nc.name)}</div>${nc.obs?`<div style="font-size:11px;color:#FCA5A5;margin-top:4px">› ${esc(nc.obs)}</div>`:''}</div>`).join('')}</div>`:''}
+${ncs.length?`<div class="card" style="border-left:3px solid #DC2626"><div class="label" style="color:#EF4444">Não Conformidades (${ncs.length})</div>${ncs.map(nc=>`<div class="nc-item"><div style="font-size:11px;color:#EF4444">${nc.veh==='SOP'?'Sala':esc(nc.veh)} — ${esc(nc.sec)}</div><div style="font-weight:600;font-size:14px">${esc(nc.name)}</div>${nc.obs?`<div style="font-size:11px;color:#FCA5A5;margin-top:4px">› ${esc(nc.obs)}</div>`:''}</div>`).join('')}</div>`:''}
 <button onclick="gerarRelatorio()" class="btn-red">📥 GERAR RELATÓRIO (HTML)</button>
 ${(()=>{const _prev=history_cbm.length>1?history_cbm[1]:null;const _reps=_prev?ncs.filter(nc=>_prev.ncs.some(p=>p.veh===nc.veh&&p.sec===nc.sec&&p.name===nc.name)):[];return _reps.length?`<div style="background:#1C1408;border:1px solid #854D0E;border-radius:8px;padding:10px;margin-bottom:8px;font-size:12px;color:#FDE68A">⚠ ${_reps.length} NC(s) já reportada(s) na conferência anterior. Serão indicadas no documento Word.</div>`:'';})()}
 ${ncs.length?`<button onclick="gerarParte()" class="btn-gold" >${parteLoading?'<span class="spinner"></span>Gerando Parte com IA...':'📄 GERAR PARTE (Word) — '+ncs.length+' N/C(s)'}</button>`:''}
