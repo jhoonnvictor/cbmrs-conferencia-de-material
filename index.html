@@ -66,8 +66,8 @@
     .sticky-hdr{position:sticky;top:0;z-index:10;padding:10px 14px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
     /* Skill frontend-aesthetics: barra de progresso com rótulo numérico */
     .prog-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
-    .prog-lbl{font-size:9px;color:rgba(255,255,255,.5);letter-spacing:.5px;text-transform:uppercase}
-    .prog-count{font-size:10px;color:#FFD700;font-weight:700;font-family:'Barlow Condensed',sans-serif}
+    .prog-lbl{font-size:11px;color:rgba(255,255,255,.5);letter-spacing:.5px;text-transform:uppercase}
+    .prog-count{font-size:12px;color:#FFD700;font-weight:700;font-family:'Barlow Condensed',sans-serif}
     .prog-bg{height:5px;background:rgba(255,255,255,.12);border-radius:3px;margin-top:2px}
     .prog-fill{height:5px;background:linear-gradient(90deg,#C28A20,#FFD700);border-radius:3px;transition:width .3s}
     /* ── Itens de checklist ── */
@@ -77,7 +77,7 @@
     /* Skill frontend-aesthetics: quantidade em badge dourado */
     .item-qty{display:inline-block;font-size:10px;font-weight:700;color:#C28A20;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px;margin-top:3px;background:rgba(194,138,32,.1);border-radius:4px;padding:1px 6px}
     /* Skill web-design-guidelines: botões com min-height, aria-friendly */
-    .item-btn{flex:1;border-radius:8px;padding:10px 0;cursor:pointer;font-weight:800;border:2px solid #1E3050;background:#090E1A;color:#4A6080;font-family:'Barlow Condensed',sans-serif;font-size:16px;letter-spacing:.5px;transition:all .15s;min-height:44px;touch-action:manipulation}
+    .item-btn{flex:1;border-radius:8px;padding:10px 0;cursor:pointer;font-weight:800;border:2px solid #1E3050;background:#090E1A;color:#4A6080;font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:.5px;transition:all .15s;min-height:44px;touch-action:manipulation}
     .item-btn.ok{background:#16A34A;border-color:#16A34A;color:#fff}
     .item-btn.nc{background:#DC2626;border-color:#DC2626;color:#fff}
     /* ── Barra de navegação inferior ── */
@@ -327,7 +327,7 @@ const VH = [
   {id:'ar797',   name:'AR 797',   type:'Ambulância de Resgate', color:'#990000', img:IMG_AR797},
   {id:'abt660',  name:'ABT 660',  type:'Auto Bomba Tanque',     color:'#8B4500', img:IMG_ABT},
   {id:'abt9468', name:'ABT 9468', type:'Auto Bomba Tanque',     color:'#7A5500', img:IMG_ABT},
-  {id:'atm1209', name:'ATM 1209', type:'Auto Tanque Médio',     color:'#1A5C1A', img:IMG_ATM},
+  {id:'atm1209', name:'ATM 1209', type:'Auto Transporte de Materiais',     color:'#1A5C1A', img:IMG_ATM},
   {id:'sop',     name:'SOP',      type:'Sala de Operações',     color:'#1A3A80', img:IMG_SOP},
 ];
 
@@ -339,9 +339,9 @@ const SC=[
     ['Chave VTR','1 UN'],['Controle Portão','1 UN'],['Diário de Bordo — Conferir KM','1 UN'],
     ['Caixa de Máscara Facial Descartável','1 UN'],['Caixa de Luva de Procedimento','1 UN'],
     ['Lanterna RAC Lite e Carregador (cabo e fonte)','1 UN'],['Rolo Fita Zebrada','1 UN'],
-    ['Triângulo de Sinalização','1 UN'],['Extintor de Incêndio','1 UN'],
+    ['Triângulo de Sinalização','1 UN'],['Extintor de Incêndio (Banco)','1 UN'],
     ['Cilindros de Oxigênio','2 UN'],['Cones Grandes','3 UN'],
-    ['Extintor de Incêndio (2º)','1 UN'],['Vassoura','1 UN'],
+    ['Vassoura','1 UN'],['Extintor de Incêndio (Cortina)','1 UN'],
   ]},
   {id:'ar_sal',vid:'ar797',title:'SALÃO DA RESGATE',icon:'🏥',items:[
     ['Extintor de Incêndio','1 UN'],['Extensão Trifásica','1 UN'],
@@ -354,11 +354,9 @@ const SC=[
     ['Solução Fisiológica','DIVERSAS'],['Gazes','DIVERSA'],['Óculos Nasal','DIVERSA'],
     ['Lençol para Colchão Maca Retrátil','DIVERSA'],['Kit Método START','1 UN'],
     ['Aspirador de Secreção Portátil','1 UN'],['Máscara Não Reinalante (Hudson)','1 adulto + 1 infantil'],
-    ['Óculos Nasal (a pronto emprego)','3 UN'],['Mangueira de Fluxo de Ar','1 UN'],
-    ['Pacote de Palitos','1 UN'],['Gazes (a pronto emprego)','DIVERSA'],
-    ['Ataduras','DIVERSA'],['Fita Crepe','DIVERSA'],['Micropore','DIVERSA'],
-    ['Esparadrapo','DIVERSA'],['Água Oxigenada (a pronto emprego)','DIVERSA'],
-    ['Solução Fisiológica (a pronto emprego)','DIVERSA'],
+    ['Óculos Nasal','3 UN'],['Mangueira de Fluxo de Ar','1 UN'],['Pacote de Palitos','1 UN'],
+    ['Gazes','DIVERSA'],['Ataduras','DIVERSA'],['Fita Crepe','DIVERSA'],['Micropore','DIVERSA'],
+    ['Esparadrapo','DIVERSA'],['Água Oxigenada','DIVERSA'],['Solução Fisiológica','DIVERSA'],
     ['Colar Cervical','1G+1M+1P+2PP+2 Neo Nato+2 Regulável'],
   ]},
   {id:'ar_aph',vid:'ar797',title:'BOLSA APH — Kit Sinais Vitais',icon:'🎒',items:[
@@ -377,10 +375,10 @@ const SC=[
   {id:'ar_que',vid:'ar797',title:'KIT QUEIMADURA / EVISCERAÇÃO',icon:'🔥',items:[
     ['Ataduras de 1,80m','2 UN'],['Fita Microporosa','1 UN'],['Soluções Fisiológicas','2 UN'],
     ['Gazes','DIVERSAS'],['Luvas','2 UN'],['Bandagens Triangulares 100% Algodão','2 UN'],
-    ['Pinça','1 UN'],['Capas Protetoras Queimadura/Evisceração 90x1,2','2 UN'],
+    ['Pinça','1 UN'],['Capas Protetoras Queimadura/Evisceração 90x1,2','2 UN'],['Manta Aluminizada','1 UN'],
   ]},
   {id:'ar_cmp',vid:'ar797',title:'COMPARTIMENTO PRINCIPAL',icon:'📦',items:[
-    ['Manta Aluminizada','1 UN'],['Kit Acessórios (luz química, manta, tesoura, martelo emergência)','1 JG'],
+    ['Kit Acessórios (luz química, manta, tesoura, martelo emergência)','1 JG'],
     ['Ambú Adulto','1 UN'],['Ambú Infantil','1 UN'],['Fita Zebrada','2 UN'],
     ['Máscara Pocket','2 UN'],['Cateter p/ Oxigênio — Tipo Óculos','2 UN'],
     ['Cânula de Guedel','3 UN (tam. 02, 03 e 04)'],['Extensão para Oxigênio','4 UN'],
@@ -389,18 +387,17 @@ const SC=[
     ['Colar Cervical','1P + 1PP'],['Talas','1 Roxa, 2 Azuis, 1 Verde, 1 Laranja'],
   ]},
   {id:'b60_cab',vid:'abt660',title:'CABINE',icon:'🚗',items:[
-    ['Controle Torre de Iluminação (porta motorista)','1 UN'],['Controle Sem Fio Guincho','1 UN'],
+    ['Controle da Torre de Iluminação','1 UN'],['Controle Sem Fio Guincho','1 UN'],
     ['Lanterna Amarela L-3000','1 UN'],['Diário de Bordo — Conferir KM','1 UN'],
     ['Controle Portão','1 UN'],['Caixa Luva de Procedimento','1 UN'],
-    ['Máscaras Combate Incêndio (cabine traseira)','3 UN'],['Fita Zebrada','1 UN'],
+    ['Máscaras Combate a Incêndio','3 UN'],['Fita Zebrada','1 UN'],
     ['Controle Manual Guincho com Fio','1 UN'],['Colares Cervicais','2 UN'],
     ['Conjunto Coxins','1 JG'],['Extintor de Incêndio','1 UN'],
     ['Freezer com Garrafas de Água','1 UN'],['Macaco Hidráulico','1 UN'],
-    ['Caixa com Manuais do Caminhão','1 UN'],
+    ['Caixa com Manuais do Caminhão','1 UN'],['EPRA Completa - Arelho e Carona','3 CIL. mín. 200 bar'],
   ]},
-  {id:'b60_epra',vid:'abt660',title:'EPRA / BOLSA APH — Kit Sinais Vitais',icon:'🫁',items:[
-    ['EPRA Completa — Arrelho e Carona','3 CIL. mín. 200 bar'],['Maca de Arasto','1 UN'],
-    ['Glicosímetro + tiras reagentes e lancetas','TIRAS E LANCETAS'],
+  {id:'b60_epra',vid:'abt660',title:'BOLSA APH — Kit Sinais Vitais',icon:'🎒',items:[
+    ['Maca de Arasto','1 UN'],['Glicosímetro + tiras reagentes e lancetas','TIRAS E LANCETAS'],
     ['Oxímetro','1 UN'],['Caneta Lanterna','1 UN'],['Termômetro','1 UN'],
     ['Esfigmomanômetro','1 UN'],['Estetoscópio','1 UN'],
   ]},
@@ -428,19 +425,19 @@ const SC=[
   ]},
   {id:'b60_c1',vid:'abt660',title:'CORTINA 01 — Lado Motorista',icon:'🪟',items:[
     ['Maca Envelope','1 UN'],['Motosserra (ligar nas segundas-feiras)','4 UN'],
-    ['Maca Rígida Completa + Cinto Polvo e Imobilizador de Cabeça','1 JG'],
+    ['Maca Rígida Completa + Cinto Polvo e Imobilizador de Cabeça','1 JG'],['Cones Grandes','10 UN'],
   ]},
   {id:'b60_c2',vid:'abt660',title:'CORTINA 02 — Lado Motorista',icon:'🪟',items:[
-    ['Caixa 01+02: Roupas de Apicultor','3 UN (2 completo + 1 parte de cima)'],
-    ['Caixa 03: Combustíveis — Gasolina Comum','1 UN'],
-    ['Caixas de Ferramentas (verificar se completas)','1 JG'],
-    ['Óleos — Motosserra e Hidráulico','1 JG'],['Calços Metálicos','2 UN'],['Luvas Isolada (borracha)','1 PAR'],
+    ['Caixa 1: Roupas de Apilcultor','3 UN'],['Caixa 2: Combustíveis e Gasolina','DIVERSA'],
+    ['Caixa 3: Óleo para Motoserra e Hidráulico','DIVERSO'],
+    ['Caixa de Ferramentas (Verificar se Completas)','2 UN'],
+    ['Calços Metálicos','2 UN'],['Luvas Isolada (borracha)','1 PAR'],
+    ['Cilindro de Oxigênio Portátil','1 UN'],['Calço Escalonado','2 UN'],
+    ['Galão de Captura de Animal','1 UN'],
   ]},
   {id:'b60_c3',vid:'abt660',title:'CORTINA 03 — Lado Motorista',icon:'🪟',items:[
-    ['Cilindro de Oxigênio Portátil','1 UN'],['Calços Escalonado de Madeira','2 UN'],
-    ['Galão Captura de Animal','1 UN'],['Martelo de Borracha','1 UN'],
-    ['Cilindros de EPRA','3 UN'],['Galão com Serragem','1 UN'],
-    ['Mangueiras de 1,5"','4 UN'],['Mangueiras de 2,5"','4 UN'],
+    ['Martelo de Borracha','1 UN'],['Cilindros de EPRA','3 UN'],
+    ['Galão com Serragem','1 UN'],['Mangueiras de 1,5"','4 UN'],['Mangueiras de 2,5"','4 UN'],
   ]},
   {id:'b60_c4',vid:'abt660',title:'CORTINA 04 — Lado Motorista',icon:'🪟',items:[
     ['Esguichos de 1,5"','2 UN'],['Esguicho 2,5"','1 UN'],['Reduções Storz','2 UN'],
@@ -452,6 +449,7 @@ const SC=[
     ['Redução Storz','2 UN'],['Mangueira 2,5"','2 UN'],['Mangueira 1,5"','4 UN'],
     ['Chave de Mangueira','2 UN'],['Mangueira Abastecimento','1 UN'],
     ['Luvas do Hidrante e Conexões','6 UN + 1 conj. conexão + 1 conexão macho'],
+    ['Conjunto Conexão','1 UN'],['Conexão Macho','1 UN'],
   ]},
   {id:'b60_c6',vid:'abt660',title:'CORTINA 06 — Lado Carona',icon:'🪟',items:[
     ['Painel Traseiro: Croque (3 lanços), Pegador Rede, Chave Hidrante, 3 Escudos, Pegador Pinça, 4 Calços Escalonados','1 JG'],
@@ -465,10 +463,11 @@ const SC=[
     ['Mangueira de Engate Rápido (testar ferramentas nas quartas-feiras)','2 UN'],
   ]},
   {id:'b60_c8',vid:'abt660',title:'CORTINA 08 — Salvamento em Altura',icon:'🧗',items:[
-    ['Caixa 01: Corda Laranja de Salvamento 50m','1 UN'],['Caixa 02: Extintores','2 UN (1 ABC + 1 BC)'],
+    ['Caixa 01: Corda para Corte de Árvores','Diversa'],
+    ['Caixa 02: Extintores','2 UN (1 ABC + 1 BC)'],
     ['Caixa Laranja: Corda Salvamento em Altura 50m','1 UN'],
-    ['Caixa com Cordas para Corte de Árvore','2 UN'],['Facão','2 UN'],
-    ['Controle Fixo Torre de Iluminação','1 UN'],
+    ['Caixa com Cordas para Corte de Árvore','2 UN'],
+    ['Facão','2 UN'],['Controle Fixo Torre de Iluminação','1 UN'],
   ]},
   {id:'b60_cb',vid:'abt660',title:'CAIXA BRANCA (se utilizada — senão pular)',icon:'📦',items:[
     ['Corda para Corte de Árvore','1 UN'],['Cabo Solteiro','2 UN'],['Cordelete','4 UN (verde)'],
@@ -486,14 +485,14 @@ const SC=[
     ['Caixa 01: Pá de Concha, Enxada, Foice, Bomba Costal, Alavanca de Ferro','1 JG'],
     ['Caixa 02: 2 Coletes Salva Vidas, 1 Rescue, 2 Life Belts, 2 Garatéias','1 JG'],
     ['Caixa 03: 4 Batedores Fogo em Mato, 1 Ralo, 1 Colete Salva Vidas','1 JG'],
-    ['Escada Prolongável','1 UN'],['Mangotes','2 UN'],['Martelo de Borracha','1 UN'],
+    ['Escada Prolongável','1 UN'],['Mangotes','2 UN'],
   ]},
   {id:'b94_cab',vid:'abt9468',title:'CABINE',icon:'🚗',items:[
     ['Martelo de Borracha','1 UN'],['Lanterna Amarela L-3000','1 UN'],
     ['Diário de Bordo — Conferir KM','1 UN'],['Controle do Portão','1 UN'],
     ['Caixa de Luva de Procedimento','1 UN'],['Caixa de Máscara Facial Descartável','1 UN'],
-    ['Facão','1 UN'],['Lâmpada "Farolete"','1 UN'],['Máscaras Faciais (EPRA)','3 UN'],
-    ['Controle do Guincho com Fio','1 UN'],['EPRA Completa (Arrelho e Carona)','3 CIL. mín. 200 bar'],
+    ['Facão','1 UN'],['Lâmpada "Farolete"','1 UN'],['Controle do Guincho com Fio','1 UN'],
+    ['Máscaras Faciais (EPRA)','3 UN'],['EPRA Completa (Arrelho e Carona)','3 CIL. mín. 200 bar'],
   ]},
   {id:'b94_aph',vid:'abt9468',title:'BOLSA APH — Kit Sinais Vitais',icon:'🎒',items:[
     ['Ambú Adulto','1 UN'],['Ambú Infantil','1 UN'],['Monitor de Sinais Vitais','1 UN'],
@@ -507,11 +506,13 @@ const SC=[
   ]},
   {id:'b94_g1',vid:'abt9468',title:'GAVETA 01 — Lado Motorista',icon:'🗂️',items:[
     ['Esguicho 1,5"','1 UN'],['Divisor','1 UN'],['Conexão Macho/Fêmea Rosca','2 UN'],
-    ['Redução Storz','1 UN'],['Chave de Mangueira','1 UN'],
+    ['Redução Storz','1 UN'],['Proporcionador de Espuma','1 UN'],
   ]},
-  {id:'b94_g2',vid:'abt9468',title:'GAVETA 02 — Lado Motorista',icon:'🗂️',items:[['Proporcionador de Espuma','1 UN']]},
+  {id:'b94_g2',vid:'abt9468',title:'GAVETA 02 — Lado Motorista',icon:'🗂️',items:[
+    ['Mangueira 2,5','3 UN'],
+  ]},
   {id:'b94_g3',vid:'abt9468',title:'GAVETA 03 — Lado Motorista',icon:'🗂️',items:[
-    ['Mangueira 2,5"','3 UN'],['Calço Escalonado de Madeira','2 UN'],
+    ['Calço Escalonado de Madeira','2 UN'],
   ]},
   {id:'b94_ct',vid:'abt9468',title:'CORTINAS TRASEIRAS',icon:'🚒',items:[
     ['Cones Grandes','4 UN'],['Hi-Lift','2 UN'],['Malho','1 UN'],['Halligan','1 UN'],
@@ -519,21 +520,23 @@ const SC=[
     ['Enxada','1 UN'],['Colete Salva Vidas','2 UN'],
   ]},
   {id:'b94_g4',vid:'abt9468',title:'GAVETA 04 — Lado Carona',icon:'🗂️',items:[['Galão LGE','1 UN']]},
-  {id:'b94_g5',vid:'abt9468',title:'GAVETA 05 — Lado Motorista',icon:'🗂️',items:[['Mangueira 2,5"','1 UN']]},
-  {id:'b94_ps',vid:'abt9468',title:'PARTE SUPERIOR / TETO + CONEXÃO REBOQUE',icon:'⬆️',items:[
-    ['Mangueira 1,5"','5 UN'],['Esguicho 1,5"','1 UN'],['Redução Storz','1 UN'],
-    ['Chave de Mangote','2 UN'],['Batedores Fogo em Mato','3 UN'],['Foice','1 UN'],
-    ['Picareta','1 UN'],['Escorva (Ralo)','1 UN'],['Conexão Reboque','1 UN'],
+  {id:'b94_g5',vid:'abt9468',title:'GAVETA 05 — Lado Motorista',icon:'🗂️',items:[
+    ['Mangueira 2,5"','1 UN'],['Mangueira 1,5','5 UN'],
+    ['Esguicho 1,5','1 UN'],['Redução Storz','1 UN'],['Chave de Mangote','2 UN'],
+  ]},
+  {id:'b94_ps',vid:'abt9468',title:'Parte Superior',icon:'⬆️',items:[
+    ['Batedores Fogo em Mato','3 UN'],['Foice','1 UN'],['Picareta','1 UN'],
+    ['Escorva (Ralo)','1 UN'],['Conexão Reboque','1 UN'],
     ['Escada Prolongável','2 UN'],['Maca Tipo Cesto','1 UN'],
   ]},
   {id:'atm_aph',vid:'atm1209',title:'BOLSA APH PEQUENA',icon:'🎒',items:[['Bolsa de APH Pequena (verificar conteúdo)','1 UN']]},
   {id:'sop_rad',vid:'sop',title:'RÁDIOS E COMUNICAÇÕES',icon:'📻',items:[
-    ['Rádios HT\'s','4 UN (CG, COV, C1, C2)'],['Carregador das Lanternas Amarelas','1 UN'],
-    ['Carregador da Serra Sabre','1 UN'],['Carregador dos HT\'s','1 UN'],
+    ["Rádios HT's",'4 UN (CG, COV, C1, C2)'],['Carregador das Lanternas Amarelas','1 UN'],
+    ['Carregador da Serra Sabre','1 UN'],["Carregador dos HT's",'1 UN'],
     ['Carregador do Monitor de Sinais Vitais','1 UN'],
   ]},
   {id:'sop_arm',vid:'sop',title:'ARMÁRIO BRANCO',icon:'🗄️',items:[
-    ['Carregadores de HT\'s','2 UN'],['Baterias Reservas','3 UN'],['Bandoleiras','3 UN'],
+    ["Carregadores de HT's",'2 UN'],['Baterias Reservas','3 UN'],['Bandoleiras','3 UN'],
     ['Micro Retífica com Acessórios','1 UN'],['Bandeiras (BR, RS, SM)','3 UN'],
   ]},
   {id:'sop_eqp',vid:'sop',title:'EQUIPAMENTOS DA SOP',icon:'📱',items:[['Telefone Móvel — Testar 193','1 UN']]},
@@ -755,7 +758,6 @@ function render(){
   <p style="font-size:10px;color:rgba(255,255,255,.55);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px">Quartel CB São Marcos · 2026</p>
   <div class="hero-pills">
     <span class="hero-pill"><time datetime="${new Date().toISOString().slice(0,10)}">${new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}</time></span>
-    <span class="hero-pill">Turno ${(() => { const h=new Date().getHours(); return h<14?'01':h<20?'02':'03'; })()}</span>
   </div>
 </header>
 <div style="padding:14px">
@@ -811,8 +813,8 @@ ${!identOk()?`<div style="background:#1C1408;border:1px solid #854D0E;border-rad
     sec.items.forEach(([name,qty],i)=>{
       const id=`${sec.id}_${i}`,r=responses[id],isOk=r?.status==='ok',isNc=r?.status==='nc';
       html+=`<div class="item-card ${isOk?'ok':isNc?'nc':''}">
-<div><div style="font-weight:600;font-size:14px;color:${isNc?'#FCA5A5':isOk?'#86EFAC':'#E8EDF5'}">${esc(name)}</div>
-<div class="item-qty">📦 ${esc(qty)}</div></div>
+<div><div style="font-weight:600;font-size:17px;color:${isNc?'#FCA5A5':isOk?'#86EFAC':'#E8EDF5'}">${esc(name)}</div>
+<div class="item-qty">${esc(qty)}</div></div>
 <div style="display:flex;gap:8px;margin-top:10px">
 <button class="item-btn ${isOk?'ok':''}" onclick="setStatus('${id}','ok')" aria-pressed="${isOk}" aria-label="Marcar como conforme">✓ CONFORME</button>
 <button class="item-btn ${isNc?'nc':''}" onclick="setStatus('${id}','nc')" aria-pressed="${isNc}" aria-label="Marcar como não conforme">✗ N/C</button>
@@ -829,17 +831,17 @@ ${isNc?`<div><textarea id="obs_${id}" placeholder="Descreva a não conformidade 
 <div class="sticky-hdr" style="background:${veh.color}">
   <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
     <div style="flex:1;min-width:0">
-      <div style="font-size:10px;opacity:.65" class="ff">${esc(veh.name)}</div>
-      <div style="font-size:15px;font-weight:800;letter-spacing:.5px;line-height:1.2" class="ff">${esc(sec.icon)} ${esc(sec.title)}</div>
+      <div style="font-size:13px;opacity:.65" class="ff">${esc(veh.name)}</div>
+      <div style="font-size:20px;font-weight:800;letter-spacing:.5px;line-height:1.2" class="ff">${esc(sec.icon)} ${esc(sec.title)}</div>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
-      <div style="font-size:24px;font-weight:900" class="ff">${prog.pct}%</div>
-      <div style="font-size:10px;opacity:.65">${prog.done}/${prog.total}</div>
-      ${semResposta>0?`<button onclick="marcarTodosOk()" style="background:rgba(255,255,255,0.2);color:white;border:1px solid rgba(255,255,255,0.4);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;white-space:nowrap">✓ Todos Conforme</button>`:''}
+      <div style="font-size:30px;font-weight:900" class="ff">${prog.pct}%</div>
+      <div style="font-size:13px;opacity:.65">${prog.done}/${prog.total}</div>
+      ${semResposta>0?`<button onclick="marcarTodosOk()" style="background:rgba(255,255,255,0.2);color:white;border:1px solid rgba(255,255,255,0.4);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:13px;font-family:'Barlow Condensed',sans-serif;font-weight:700;white-space:nowrap">✓ Todos Conforme</button>`:''}
     </div>
   </div>
   <div class="prog-row"><span class="prog-lbl">progresso total</span><span class="prog-count">${prog.done}/${prog.total} itens</span></div><div class="prog-bg"><div class="prog-fill" style="width:${prog.pct}%"></div></div>
-  <div style="font-size:10px;opacity:.55;margin-top:4px" class="ff">Seção ${secIdx+1}/${secs.length} · ${sec.items.length} itens</div>
+  <div style="font-size:13px;opacity:.55;margin-top:4px" class="ff">Seção ${secIdx+1}/${secs.length} · ${sec.items.length} itens</div>
 </div>
 <div style="padding:14px">${html}</div>
 <div class="bottom-bar">
