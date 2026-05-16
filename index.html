@@ -69,7 +69,7 @@
     /* Skill frontend-aesthetics: quantidade em badge dourado */
     .item-qty{display:inline-block;font-size:10px;font-weight:700;color:#C28A20;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px;margin-top:3px;background:rgba(194,138,32,.1);border-radius:4px;padding:1px 6px}
     /* Skill web-design-guidelines: botões com min-height, aria-friendly */
-    .item-btn{flex:1;border-radius:8px;padding:10px 0;cursor:pointer;font-weight:800;border:2px solid #1E3050;background:#090E1A;color:#4A6080;font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:.5px;transition:all .15s;min-height:44px;touch-action:manipulation}
+    .item-btn{flex:1;border-radius:7px;padding:6px 0;cursor:pointer;font-weight:800;border:1.5px solid #1E3050;background:#090E1A;color:#4A6080;font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:.5px;transition:all .15s;min-height:36px;touch-action:manipulation}
     .item-btn.ok{background:#16A34A;border-color:#16A34A;color:#fff}
     .item-btn.nc{background:#DC2626;border-color:#DC2626;color:#fff}
     /* ── Barra de navegação inferior ── */
@@ -91,6 +91,10 @@
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
     @media(max-width:600px){input,textarea{font-size:16px}.hero{padding:16px 14px 16px}}
     @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+    /* ── Animações de entrada ── */
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+    .card,.item-card,.veh-card{animation:fadeUp .38s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(var(--anim-i,0)*50ms)}
+    .item-card:hover{box-shadow:0 0 0 1px rgba(204,0,0,.12),0 4px 14px rgba(0,0,0,.3)}
   </style>
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -175,20 +179,7 @@ window.signInEmail = async()=>{
   if(!em||!pw){authError='Preencha e-mail e senha.';renderAuth();return;}
   authLoading=true;authError='';renderAuth();
   try{await fbAuth.signInWithEmailAndPassword(em,pw);}
-  catch(e){
-    console.error('[Auth] signInEmail:',e.code,e.message);
-    const _m={
-      'auth/invalid-credential':'E-mail ou senha incorretos.',
-      'auth/user-not-found':'E-mail não cadastrado.',
-      'auth/wrong-password':'Senha incorreta.',
-      'auth/too-many-requests':'Muitas tentativas. Aguarde e tente novamente.',
-      'auth/operation-not-allowed':'Login por e-mail não habilitado no Firebase. Contate o administrador.',
-      'auth/unauthorized-domain':'Domínio não autorizado no Firebase. Contate o administrador.',
-      'auth/network-request-failed':'Erro de rede. Verifique sua conexão.',
-    };
-    authError=(_m[e.code]||'Erro ['+e.code+']. Contate o administrador.');
-    authLoading=false;renderAuth();
-  }
+  catch(e){authError='E-mail ou senha incorretos.';authLoading=false;renderAuth();}
 };
 window.registerEmail = async()=>{
   const em=document.getElementById('reg_email')?.value?.trim();
@@ -200,16 +191,7 @@ window.registerEmail = async()=>{
   authLoading=true;authError='';renderAuth();
   try{await fbAuth.createUserWithEmailAndPassword(em,pw);}
   catch(e){
-    console.error('[Auth] registerEmail:',e.code,e.message);
-    const _m={
-      'auth/email-already-in-use':'Este e-mail já está cadastrado.',
-      'auth/operation-not-allowed':'Cadastro por e-mail não habilitado no Firebase. Contate o administrador.',
-      'auth/unauthorized-domain':'Domínio não autorizado no Firebase. Contate o administrador.',
-      'auth/weak-password':'Senha muito fraca. Use ao menos 6 caracteres.',
-      'auth/invalid-email':'E-mail inválido.',
-      'auth/network-request-failed':'Erro de rede. Verifique sua conexão.',
-    };
-    authError=(_m[e.code]||'Erro ['+e.code+']. Contate o administrador.');
+    authError=e.code==='auth/email-already-in-use'?'Este e-mail já está cadastrado.':'Erro ao cadastrar. Tente novamente.';
     authLoading=false;renderAuth();
   }
 };
@@ -284,7 +266,7 @@ function renderAuth(){
         <input id="auth_pw" type="password" placeholder="Senha" autocomplete="current-password">
         <button onclick="signInEmail()" class="btn-red" ${authLoading?'disabled':''}>${authLoading?'Entrando...':'ENTRAR'}</button>
       </div>
-      <button onclick="showRegister()" class="btn-gray">Criar novo acesso</button>
+      <button onclick="showRegister()" class="btn-gray" style="border-color:#2A4060;color:#94B4D4;background:#111D30">📋 Criar novo acesso</button>
     </div>
   </div>`;
 }
@@ -306,6 +288,12 @@ window.approveUser=async(uid)=>{
   if(!nome||!rank){alert('Preencha ao menos Nome Completo e Graduação.');return;}
   await fbDb.ref('usuarios/'+uid).update({nome,guerra,rank,re,aprovado:true});
   alert('Acesso liberado com sucesso!');
+  await window.loadAdmin();
+};
+window.deleteUser=async(uid,email)=>{
+  if(!confirm('Excluir permanentemente a solicitação de '+email+'?\nEsta ação não pode ser desfeita.'))return;
+  await fbDb.ref('usuarios/'+uid).remove();
+  alert('Solicitação excluída.');
   await window.loadAdmin();
 };
 window.revokeUser=async(uid)=>{
@@ -826,10 +814,10 @@ ${!identOk()?`<div style="background:#1C1408;border:1px solid #854D0E;border-rad
     let html='';
     sec.items.forEach(([name,qty],i)=>{
       const id=`${sec.id}_${i}`,r=responses[id],isOk=r?.status==='ok',isNc=r?.status==='nc';
-      html+=`<div class="item-card ${isOk?'ok':isNc?'nc':''}">
-<div><div style="font-weight:600;font-size:17px;color:${isNc?'#FCA5A5':isOk?'#86EFAC':'#E8EDF5'}">${esc(name)}</div>
+      html+=`<div class="item-card ${isOk?'ok':isNc?'nc':''}" style="--anim-i:${i}">
+<div><div style="font-weight:600;font-size:19px;color:${isNc?'#FCA5A5':isOk?'#86EFAC':'#E8EDF5'}">${esc(name)}</div>
 <div class="item-qty">${esc(qty)}</div></div>
-<div style="display:flex;gap:8px;margin-top:10px">
+<div style="display:flex;gap:6px;margin-top:8px">
 <button class="item-btn ${isOk?'ok':''}" onclick="setStatus('${id}','ok')" aria-pressed="${isOk}" aria-label="Marcar como conforme">✓ CONFORME</button>
 <button class="item-btn ${isNc?'nc':''}" onclick="setStatus('${id}','nc')" aria-pressed="${isNc}" aria-label="Marcar como não conforme">✗ N/C</button>
 </div>
@@ -913,7 +901,10 @@ ${ncs.length?`<button onclick="gerarParte()" class="btn-gold" >${parteLoading?'<
       </select>
       <input id="adm_re_${u.uid}" type="text" placeholder="Id.Func" value="${esc(u.re||'')}">
       ${isPending
-        ?`<button onclick="approveUser('${u.uid}')" class="btn-red">✓ APROVAR ACESSO</button>`
+        ?`<div style="display:flex;gap:8px;margin-top:4px">
+             <button onclick="approveUser('${u.uid}')" class="btn-red" style="flex:2">✓ APROVAR</button>
+             <button onclick="deleteUser('${u.uid}','${u.email}')" style="flex:1;background:#1C0808;color:#FCA5A5;border:1px solid #7F1D1D;border-radius:10px;padding:13px 0;font-size:13px;font-weight:700;cursor:pointer;font-family:'Barlow Condensed',sans-serif;min-height:44px">🗑 Excluir</button>
+           </div>`
         :`<div style="display:flex;gap:8px;margin-top:4px">
            <button onclick="updateUserProfile('${u.uid}')" class="btn-gray" style="flex:2">💾 Atualizar</button>
            <button onclick="revokeUser('${u.uid}')" style="flex:1;background:#1C0808;color:#FCA5A5;border:1px solid #7F1D1D;border-radius:10px;padding:13px 0;font-size:13px;font-weight:700;cursor:pointer;font-family:'Barlow Condensed',sans-serif">Revogar</button>
