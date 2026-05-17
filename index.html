@@ -270,6 +270,7 @@ window.loadAdmin=async()=>{
   const snap=await fbDb.ref('usuarios').once('value');
   allUsers=[];
   snap.forEach(c=>{allUsers.push({uid:c.key,...c.val()});});
+  if(adminTab==='checklist'&&!editingSC)editingSC=JSON.parse(JSON.stringify(getSC()));
   setState({screen:'admin'});
 };
 window.approveUser=async(uid)=>{
@@ -304,14 +305,189 @@ window.updateUserProfile=async(uid)=>{
   await window.loadAdmin();
 };
 
+// ════════════════════════════════════
+//  ADMIN — Editor de Checklist
+// ════════════════════════════════════
+window.adminSetTab=tab=>{
+  adminTab=tab;
+  if(tab==='checklist'&&!editingSC)editingSC=JSON.parse(JSON.stringify(getSC()));
+  adminEditingItem=null;adminMovingItem=null;
+  renderAdmin();
+};
+window.adminSetVehFilter=vid=>{
+  adminVehFilter=vid;
+  adminEditingItem=null;adminMovingItem=null;
+  renderAdmin();
+};
+window.adminMoveItem=(si,ii,dir)=>{
+  const items=editingSC[si].items;
+  const ni=ii+dir;
+  if(ni<0||ni>=items.length)return;
+  [items[ii],items[ni]]=[items[ni],items[ii]];
+  adminEditingItem=null;adminMovingItem=null;
+  renderAdmin();
+};
+window.adminDeleteItem=(si,ii)=>{
+  if(!confirm('Excluir este item do checklist?'))return;
+  editingSC[si].items.splice(ii,1);
+  adminEditingItem=null;adminMovingItem=null;
+  renderAdmin();
+};
+window.adminStartEdit=(si,ii)=>{
+  adminEditingItem={si,ii};adminMovingItem=null;
+  renderAdmin();
+  setTimeout(()=>document.getElementById('edit_name_'+si+'_'+ii)?.focus(),80);
+};
+window.adminSaveEdit=(si,ii)=>{
+  const nameEl=document.getElementById('edit_name_'+si+'_'+ii);
+  const qtyEl=document.getElementById('edit_qty_'+si+'_'+ii);
+  const name=nameEl?.value?.trim();
+  const qty=qtyEl?.value?.trim();
+  if(!name)return;
+  editingSC[si].items[ii]=[name,qty||'—'];
+  adminEditingItem=null;renderAdmin();
+};
+window.adminCancelEdit=()=>{adminEditingItem=null;adminMovingItem=null;renderAdmin();};
+window.adminStartMove=(si,ii)=>{
+  adminMovingItem=(adminMovingItem?.si===si&&adminMovingItem?.ii===ii)?null:{si,ii};
+  adminEditingItem=null;renderAdmin();
+};
+window.adminMoveToSection=destSi=>{
+  if(!adminMovingItem)return;
+  const{si,ii}=adminMovingItem;
+  const[item]=editingSC[si].items.splice(ii,1);
+  editingSC[destSi].items.push(item);
+  adminMovingItem=null;renderAdmin();
+};
+window.adminAddItem=si=>{
+  editingSC[si].items.push(['Novo item','1 UN']);
+  adminEditingItem={si,ii:editingSC[si].items.length-1};
+  adminMovingItem=null;renderAdmin();
+  setTimeout(()=>document.getElementById('edit_name_'+si+'_'+(editingSC[si].items.length-1))?.focus(),80);
+};
+window.adminSaveChecklist=async()=>{
+  const btn=document.getElementById('btn-save-ck');
+  if(btn){btn.disabled=true;btn.textContent='💾 Salvando...';}
+  try{
+    await fbDb.ref('checklist_custom').set(editingSC);
+    customSC=JSON.parse(JSON.stringify(editingSC));
+    alert('✅ Checklist salvo! Todas as guarnições verão as alterações.');
+    renderAdmin();
+  }catch(e){
+    alert('Erro ao salvar. Verifique sua conexão.');
+    if(btn){btn.disabled=false;btn.textContent='💾 SALVAR CHECKLIST';}
+  }
+};
+window.adminResetChecklist=()=>{
+  showModal({
+    title:'↺ Restaurar Padrão',
+    msg:'O checklist voltará à configuração original. As personalizações salvas serão perdidas permanentemente.',
+    confirmLabel:'SIM, RESTAURAR',
+    cancelLabel:'Cancelar',
+    callback:async()=>{
+      try{
+        await fbDb.ref('checklist_custom').remove();
+        customSC=null;
+        editingSC=JSON.parse(JSON.stringify(SC));
+        renderAdmin();
+      }catch(e){alert('Erro ao restaurar.');}
+    }
+  });
+};
+
 
 // ════════════════════════════════════
-//  SVGs profissionais das viaturas
+//  IMAGENS DAS VIATURAS — SVG inline
+//  Sem dependência de arquivos externos
 // ════════════════════════════════════
-const IMG_AR797 = './assets/img/ar797.jpg';
-const IMG_ABT = './assets/img/abt.jpg';
-const IMG_ATM = './assets/img/atm.jpg';
-const IMG_SOP = './assets/img/sop.jpg';
+function _svgUri(s){return 'data:image/svg+xml,'+encodeURIComponent(s);}
+
+// AR 797 — Ambulância de Resgate
+const IMG_AR797=_svgUri(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 100">
+<rect width="160" height="100" fill="#0A0F1E"/>
+<text x="80" y="10" font-size="8" font-family="Arial,sans-serif" font-weight="bold" fill="#FFD700" text-anchor="middle">AR 797 · AMBULÂNCIA</text>
+<rect x="6" y="36" width="106" height="44" rx="3" fill="#EFEFEF"/>
+<rect x="88" y="22" width="60" height="52" rx="4" fill="#E4E4E4"/>
+<rect x="6" y="50" width="106" height="10" fill="#CC0000"/>
+<rect x="20" y="39" width="6" height="22" rx="1" fill="#CC0000"/>
+<rect x="12" y="48" width="22" height="6" rx="1" fill="#CC0000"/>
+<rect x="93" y="27" width="42" height="22" rx="2" fill="#5AB4D0" opacity=".85"/>
+<rect x="92" y="17" width="22" height="6" rx="2" fill="#0044AA"/>
+<rect x="114" y="17" width="22" height="6" rx="2" fill="#CC0000"/>
+<rect x="6" y="36" width="8" height="44" rx="2" fill="#D0D0D0"/>
+<rect x="56" y="40" width="26" height="16" rx="2" fill="#5AB4D0" opacity=".6"/>
+<circle cx="36" cy="82" r="13" fill="#181818"/>
+<circle cx="36" cy="82" r="6" fill="#383838"/>
+<circle cx="120" cy="82" r="13" fill="#181818"/>
+<circle cx="120" cy="82" r="6" fill="#383838"/>
+<ellipse cx="78" cy="97" rx="62" ry="2.5" fill="rgba(0,0,0,.3)"/>
+</svg>`);
+
+// ABT — Auto Bomba Tanque
+const IMG_ABT=_svgUri(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 100">
+<rect width="160" height="100" fill="#0A0F1E"/>
+<text x="80" y="10" font-size="8" font-family="Arial,sans-serif" font-weight="bold" fill="#FFD700" text-anchor="middle">AUTO BOMBA TANQUE</text>
+<rect x="5" y="35" width="112" height="42" rx="3" fill="#CC0000"/>
+<rect x="92" y="20" width="58" height="52" rx="4" fill="#BB0000"/>
+<rect x="97" y="25" width="40" height="22" rx="2" fill="#5AB4D0" opacity=".8"/>
+<rect x="92" y="15" width="44" height="6" rx="3" fill="#882200"/>
+<circle cx="44" cy="53" r="16" fill="#AA0000" stroke="#880000" stroke-width="2"/>
+<circle cx="44" cy="53" r="9" fill="#991100"/>
+<circle cx="44" cy="53" r="4" fill="#666"/>
+<rect x="20" y="20" width="35" height="8" rx="2" fill="#888"/>
+<rect x="5" y="18" width="18" height="10" rx="2" fill="#CC0000"/>
+<rect x="6" y="18" width="9" height="10" rx="1" fill="#DD2200"/>
+<rect x="5" y="42" width="112" height="5" fill="#AA0000" opacity=".5"/>
+<circle cx="35" cy="80" r="13" fill="#181818"/>
+<circle cx="35" cy="80" r="6" fill="#383838"/>
+<circle cx="118" cy="80" r="13" fill="#181818"/>
+<circle cx="118" cy="80" r="6" fill="#383838"/>
+<ellipse cx="78" cy="97" rx="65" ry="2.5" fill="rgba(0,0,0,.3)"/>
+</svg>`);
+
+// ATM — Auto Transporte de Materiais
+const IMG_ATM=_svgUri(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 100">
+<rect width="160" height="100" fill="#0A0F1E"/>
+<text x="80" y="10" font-size="8" font-family="Arial,sans-serif" font-weight="bold" fill="#FFD700" text-anchor="middle">AUTO TRANSPORTE — ATM</text>
+<rect x="5" y="30" width="120" height="48" rx="3" fill="#2D5A27"/>
+<rect x="98" y="16" width="52" height="56" rx="4" fill="#255020"/>
+<rect x="103" y="21" width="38" height="24" rx="2" fill="#5AB4D0" opacity=".75"/>
+<rect x="5" y="42" width="120" height="8" fill="#1E3D1A"/>
+<rect x="5" y="30" width="10" height="48" rx="2" fill="#1E3D1A"/>
+<rect x="18" y="30" width="75" height="48" rx="2" fill="#2A5524" stroke="#1E3D1A" stroke-width="1"/>
+<rect x="22" y="16" width="55" height="8" rx="2" fill="#555"/>
+<rect x="5" y="14" width="16" height="12" rx="2" fill="#CC8800"/>
+<rect x="6" y="14" width="8" height="12" rx="1" fill="#DDAA00"/>
+<circle cx="38" cy="80" r="13" fill="#181818"/>
+<circle cx="38" cy="80" r="6" fill="#383838"/>
+<circle cx="122" cy="80" r="13" fill="#181818"/>
+<circle cx="122" cy="80" r="6" fill="#383838"/>
+<ellipse cx="78" cy="97" rx="65" ry="2.5" fill="rgba(0,0,0,.3)"/>
+</svg>`);
+
+// SOP — Sala de Operações
+const IMG_SOP=_svgUri(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 100">
+<rect width="160" height="100" fill="#0A0F1E"/>
+<text x="80" y="10" font-size="8" font-family="Arial,sans-serif" font-weight="bold" fill="#FFD700" text-anchor="middle">SALA DE OPERAÇÕES</text>
+<rect x="8" y="18" width="144" height="68" rx="6" fill="#111D33" stroke="#1E3050" stroke-width="1.5"/>
+<rect x="16" y="26" width="60" height="40" rx="3" fill="#0A1628" stroke="#1E3050"/>
+<rect x="17" y="27" width="58" height="32" fill="#0C1E35"/>
+<line x1="17" y1="38" x2="75" y2="38" stroke="#CC0000" stroke-width="1.2" opacity=".6"/>
+<line x1="17" y1="45" x2="75" y2="45" stroke="#22C55E" stroke-width=".8" opacity=".5"/>
+<line x1="17" y1="50" x2="75" y2="50" stroke="#FFD700" stroke-width=".8" opacity=".4"/>
+<circle cx="20" cy="30" r="2.5" fill="#22C55E"/>
+<circle cx="27" cy="30" r="2.5" fill="#FFD700"/>
+<circle cx="34" cy="30" r="2.5" fill="#CC0000"/>
+<rect x="82" y="26" width="34" height="24" rx="3" fill="#0A1628" stroke="#1E3050"/>
+<rect x="83" y="27" width="32" height="22" fill="#0C1E35"/>
+<rect x="86" y="31" width="26" height="14" rx="1" fill="#091525"/>
+<rect x="120" y="26" width="28" height="24" rx="3" fill="#0A1628" stroke="#1E3050"/>
+<rect x="121" y="27" width="26" height="22" fill="#0C1E35"/>
+<rect x="16" y="58" width="60" height="12" rx="2" fill="#0A1224" stroke="#1E3050"/>
+<text x="46" y="67" font-size="7" font-family="monospace" fill="#22C55E" text-anchor="middle">PLANTAO ATIVO</text>
+<rect x="82" y="54" width="34" height="10" rx="1" fill="#0A1224" stroke="#1E3050"/>
+<rect x="120" y="54" width="28" height="10" rx="1" fill="#0A1224" stroke="#1E3050"/>
+</svg>`);
 
 // ════════════════════════════════════
 //  VEÍCULOS
@@ -547,6 +723,13 @@ let _keepScroll=false;
 let history_cbm=[];
 let _confSaved=false;
 let _parteGerada=false;
+// ── Editor de Checklist (Admin) ──
+let customSC=null;         // override carregado do Firebase
+let adminTab='users';      // 'users' | 'checklist'
+let adminVehFilter='all';
+let editingSC=null;        // cópia mutável em edição
+let adminEditingItem=null; // {si,ii} — item em edição inline
+let adminMovingItem=null;  // {si,ii} — item aguardando destino
 
 // ════════════════════════════════════
 //  STATE MANAGEMENT — setState(patch)
@@ -604,6 +787,30 @@ window.clearHistory=async()=>{
   try{await fbDb.ref('historico').set([]);}catch(e){}
   render();
 };
+async function loadCustomChecklist(){
+  try{
+    const snap=await fbDb.ref('checklist_custom').once('value');
+    const d=snap.val();
+    if(d&&_validateCustomSC(d)){customSC=d;}
+    else if(d){console.warn('CBM: checklist_custom com estrutura inválida — usando padrão.');customSC=null;}
+  }catch(e){console.warn('CBM: erro ao carregar checklist_custom',e);}
+}
+// ── Validador estrutural — impede crash por dado malformado no Firebase ──
+function _validateCustomSC(data){
+  if(!Array.isArray(data)||data.length===0)return false;
+  const validVids=new Set(VH.map(v=>v.id));
+  return data.every(sec=>{
+    if(!sec||typeof sec!=='object')return false;
+    if(typeof sec.id!=='string'||!sec.id)return false;
+    if(typeof sec.vid!=='string'||!validVids.has(sec.vid))return false;
+    if(typeof sec.title!=='string')return false;
+    if(!Array.isArray(sec.items))return false;
+    return sec.items.every(it=>
+      Array.isArray(it)&&it.length>=2&&
+      typeof it[0]==='string'&&typeof it[1]==='string'
+    );
+  });
+}
 
 // ════════════════════════════════════
 //  SEGURANÇA — escape HTML
@@ -624,7 +831,8 @@ function load(){try{const r=localStorage.getItem(LS.R);if(r)responses=JSON.parse
 // ════════════════════════════════════
 //  UTILS
 // ════════════════════════════════════
-const getAct=()=>SC.filter(s=>selVids.includes(s.vid));
+const getSC=()=>customSC||SC;
+const getAct=()=>getSC().filter(s=>selVids.includes(s.vid));
 const identOk=()=>ident.name.trim()&&ident.rank.trim();
 const hasResume=()=>Object.keys(responses).length>0;
 function getProg(){let d=0,t=0;getAct().forEach(s=>s.items.forEach((_,i)=>{t++;if(responses[`${s.id}_${i}`]?.status==='ok')d++;}));return{done:d,total:t,pct:t?Math.round(d/t*100):0};}
@@ -744,6 +952,172 @@ function gerarRelatorio(){
 }
 
 // ════════════════════════════════════
+//  RENDER ADMIN — Painel Administrativo
+// ════════════════════════════════════
+function renderAdmin(){
+  const root=document.getElementById('root');
+  const rankOpts=['Soldado QPBM','2º Sgt QPBM','1º Sgt QPBM','Sub Ten QPBM','Ten CBM','Asp CBM'];
+
+  // ── Cabeçalho fixo ──
+  const hdr=`<div style="background:linear-gradient(160deg,#0D1825,#131F32);padding:16px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1E3050;position:sticky;top:0;z-index:10">
+  <button onclick="setState({screen:'home'})" style="background:transparent;border:none;color:#7A9ABC;cursor:pointer;font-size:22px;padding:0 8px 0 0">←</button>
+  <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;letter-spacing:1px">⚙️ PAINEL ADMIN</div>
+  <div style="width:40px"></div>
+</div>`;
+
+  // ── Abas ──
+  const tabs=`<div style="display:flex;background:#090E1A;border-bottom:1px solid #1E3050;position:sticky;top:57px;z-index:9">
+  <button onclick="adminSetTab('users')" style="flex:1;padding:11px 0;border:none;border-bottom:3px solid ${adminTab==='users'?'#CC0000':'transparent'};background:transparent;color:${adminTab==='users'?'#fff':'#4A6080'};font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;letter-spacing:.5px;cursor:pointer;transition:color .15s">👥 USUÁRIOS</button>
+  <button onclick="adminSetTab('checklist')" style="flex:1;padding:11px 0;border:none;border-bottom:3px solid ${adminTab==='checklist'?'#CC0000':'transparent'};background:transparent;color:${adminTab==='checklist'?'#fff':'#4A6080'};font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;letter-spacing:.5px;cursor:pointer;transition:color .15s">📋 CHECKLIST</button>
+</div>`;
+
+  // ════════════════
+  //  ABA: USUÁRIOS
+  // ════════════════
+  if(adminTab==='users'){
+    const pending=allUsers.filter(u=>!u.aprovado);
+    const active=allUsers.filter(u=>u.aprovado);
+    const userForm=(u,isPending)=>`
+    <div class="card" style="margin-bottom:10px;${isPending?'border-color:#854D0E':''}">
+      <div style="font-size:11px;color:#4A6080;margin-bottom:8px">📧 ${esc(u.email)}</div>
+      <input id="adm_nome_${u.uid}" type="text" placeholder="Nome Completo *" value="${esc(u.nome||'')}">
+      <input id="adm_guerra_${u.uid}" type="text" placeholder="Nome de Guerra" value="${esc(u.guerra||'')}" style="color:#FFD700;font-weight:700">
+      <select id="adm_rank_${u.uid}">
+        <option value="">Graduação *</option>
+        ${rankOpts.map(r=>`<option value="${r}" ${u.rank===r?'selected':''}>${r}</option>`).join('')}
+      </select>
+      <input id="adm_re_${u.uid}" type="text" placeholder="Id.Func" value="${esc(u.re||'')}">
+      ${isPending
+        ?`<div style="display:flex;gap:8px;margin-top:4px">
+             <button onclick="approveUser('${u.uid}')" class="btn-red" style="flex:2">✓ APROVAR</button>
+             <button onclick="deleteUser('${u.uid}','${u.email}')" style="flex:1;background:#1C0808;color:#FCA5A5;border:1px solid #7F1D1D;border-radius:10px;padding:13px 0;font-size:13px;font-weight:700;cursor:pointer;font-family:'Barlow Condensed',sans-serif;min-height:44px">🗑 Excluir</button>
+           </div>`
+        :`<div style="display:flex;gap:8px;margin-top:4px">
+           <button onclick="updateUserProfile('${u.uid}')" class="btn-gray" style="flex:2">💾 Atualizar</button>
+           <button onclick="revokeUser('${u.uid}')" style="flex:1;background:#1C0808;color:#FCA5A5;border:1px solid #7F1D1D;border-radius:10px;padding:13px 0;font-size:13px;font-weight:700;cursor:pointer;font-family:'Barlow Condensed',sans-serif">Revogar</button>
+         </div>`
+      }
+    </div>`;
+    root.innerHTML=`<div class="page">${hdr}${tabs}
+<div style="padding:14px;padding-bottom:40px">
+  ${pending.length?`<div class="label" style="color:#FBBF24">⏳ Aguardando Aprovação (${pending.length})</div>${pending.map(u=>userForm(u,true)).join('')}`:''}
+  <div class="label">✅ Militares Autorizados (${active.length})</div>
+  ${active.length?active.map(u=>userForm(u,false)).join(''):'<div style="color:#4A6080;font-size:13px">Nenhum militar autorizado ainda.</div>'}
+</div></div>`;
+    return;
+  }
+
+  // ════════════════
+  //  ABA: CHECKLIST
+  // ════════════════
+  if(!editingSC)editingSC=JSON.parse(JSON.stringify(getSC()));
+
+  // ── Filtro de viatura ──
+  const vehFilterBar=`<div style="display:flex;gap:6px;overflow-x:auto;padding:10px 14px;border-bottom:1px solid #1E3050;background:#090E1A;-webkit-overflow-scrolling:touch;scrollbar-width:none">
+  <button onclick="adminSetVehFilter('all')" style="white-space:nowrap;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:12px;font-family:'Barlow Condensed',sans-serif;font-weight:700;border:1.5px solid ${adminVehFilter==='all'?'#CC0000':'#1E3050'};background:${adminVehFilter==='all'?'#CC0000':'#090E1A'};color:${adminVehFilter==='all'?'#fff':'#4A6080'}">TODAS</button>
+  ${VH.map(v=>`<button onclick="adminSetVehFilter('${v.id}')" style="white-space:nowrap;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:12px;font-family:'Barlow Condensed',sans-serif;font-weight:700;border:1.5px solid ${adminVehFilter===v.id?v.color:'#1E3050'};background:${adminVehFilter===v.id?v.color:'#090E1A'};color:${adminVehFilter===v.id?'#fff':'#4A6080'}">${esc(v.name)}</button>`).join('')}
+</div>`;
+
+  // ── Seções e itens ──
+  let sectionsHTML='';
+  editingSC.forEach((sec,si)=>{
+    if(adminVehFilter!=='all'&&sec.vid!==adminVehFilter)return;
+    const veh=VH.find(v=>v.id===sec.vid);
+    if(!veh)return; // vid inválido — seção ignorada, nunca trava
+    let itemsHTML='';
+
+    sec.items.forEach(([name,qty],ii)=>{
+      const isEd=adminEditingItem?.si===si&&adminEditingItem?.ii===ii;
+      const isMv=adminMovingItem?.si===si&&adminMovingItem?.ii===ii;
+      const isFirst=ii===0, isLast=ii===sec.items.length-1;
+
+      if(isEd){
+        itemsHTML+=`<div style="background:#0A1628;border:1px solid #CC0000;border-radius:8px;padding:10px;margin-bottom:6px">
+  <input id="edit_name_${si}_${ii}" type="text" value="${esc(name)}" placeholder="Nome do item" style="margin-bottom:6px">
+  <input id="edit_qty_${si}_${ii}" type="text" value="${esc(qty)}" placeholder="Quantidade" style="color:#C28A20;margin-bottom:8px">
+  <div style="display:flex;gap:6px">
+    <button onclick="adminSaveEdit(${si},${ii})" class="btn-red" style="flex:1;padding:8px 0;font-size:13px">✓ Salvar</button>
+    <button onclick="adminCancelEdit()" class="btn-gray" style="flex:1;padding:8px 0;font-size:13px">Cancelar</button>
+  </div>
+</div>`;
+      } else {
+        // Painel de destino (realocar)
+        let mvPanel='';
+        if(isMv){
+          const opts=editingSC.map((os,osi)=>{
+            if(osi===si)return'';
+            const ov=VH.find(v=>v.id===os.vid);
+            if(!ov)return''; // vid inválido — destino ignorado
+            return`<button onclick="adminMoveToSection(${osi})" style="display:flex;align-items:center;gap:8px;background:#141F33;border:1px solid #1E3050;border-radius:8px;padding:8px 10px;cursor:pointer;color:#E8EDF5;text-align:left;touch-action:manipulation;width:100%">
+  <span style="font-size:16px">${os.icon}</span>
+  <div>
+    <div style="font-size:9px;color:#C28A20;text-transform:uppercase;letter-spacing:.5px;font-family:'Barlow Condensed',sans-serif">${esc(ov.name)}</div>
+    <div style="font-size:13px;font-weight:700;font-family:'Barlow Condensed',sans-serif">${esc(os.title)}</div>
+  </div>
+</button>`;
+          }).join('');
+          mvPanel=`<div style="background:#080D18;border:1px solid #C28A20;border-radius:8px;padding:10px;margin-bottom:4px">
+  <div style="font-size:10px;color:#C28A20;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;font-family:'Barlow Condensed',sans-serif">↗ Mover para:</div>
+  <div style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto">${opts}</div>
+  <button onclick="adminCancelEdit()" class="btn-gray" style="margin-top:8px;padding:6px 0;font-size:12px">✕ Cancelar</button>
+</div>`;
+        }
+
+        itemsHTML+=`${mvPanel}<div style="display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:8px;margin-bottom:4px;background:${isMv?'#0A1628':'#0D1422'};border:1px solid ${isMv?'#C28A20':'#1A2A40'}">
+  <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0">
+    <button onclick="adminMoveItem(${si},${ii},-1)" ${isFirst?'disabled':''} style="background:${isFirst?'transparent':'#1E3050'};border:none;color:${isFirst?'#1A2A40':'#7A9ABC'};border-radius:4px;width:28px;height:22px;cursor:${isFirst?'default':'pointer'};font-size:13px;line-height:1;touch-action:manipulation">↑</button>
+    <button onclick="adminMoveItem(${si},${ii},1)" ${isLast?'disabled':''} style="background:${isLast?'transparent':'#1E3050'};border:none;color:${isLast?'#1A2A40':'#7A9ABC'};border-radius:4px;width:28px;height:22px;cursor:${isLast?'default':'pointer'};font-size:13px;line-height:1;touch-action:manipulation">↓</button>
+  </div>
+  <div style="flex:1;min-width:0;overflow:hidden">
+    <div style="font-size:13px;font-weight:600;color:#E8EDF5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(name)}</div>
+    <div style="font-size:10px;color:#C28A20;font-family:'Barlow Condensed',sans-serif;margin-top:1px">${esc(qty)}</div>
+  </div>
+  <div style="display:flex;gap:4px;flex-shrink:0">
+    <button onclick="adminStartEdit(${si},${ii})" title="Editar" style="background:#1E3050;border:none;color:#7A9ABC;border-radius:6px;width:32px;height:32px;cursor:pointer;font-size:13px;touch-action:manipulation">✏</button>
+    <button onclick="adminStartMove(${si},${ii})" title="Realocar" style="background:${isMv?'rgba(194,138,32,.25)':'#1E3050'};border:1px solid ${isMv?'#C28A20':'transparent'};color:${isMv?'#FFD700':'#7A9ABC'};border-radius:6px;width:32px;height:32px;cursor:pointer;font-size:15px;touch-action:manipulation">↗</button>
+    <button onclick="adminDeleteItem(${si},${ii})" title="Excluir" style="background:#1C0808;border:none;color:#EF4444;border-radius:6px;width:32px;height:32px;cursor:pointer;font-size:13px;touch-action:manipulation">✕</button>
+  </div>
+</div>`;
+      }
+    });
+
+    sectionsHTML+=`<div class="card" style="margin-bottom:10px;border-left:3px solid ${veh.color}">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+    <span style="font-size:20px">${sec.icon}</span>
+    <div style="flex:1">
+      <div style="font-size:9px;color:#C28A20;text-transform:uppercase;letter-spacing:1.5px;font-family:'Barlow Condensed',sans-serif">${esc(veh.name)} · ${esc(veh.type)}</div>
+      <div style="font-size:16px;font-weight:900;font-family:'Barlow Condensed',sans-serif;color:#E8EDF5;letter-spacing:.5px">${esc(sec.title)}</div>
+    </div>
+    <div style="font-size:11px;color:#4A6080;background:#0A111E;border-radius:4px;padding:2px 8px;font-family:'Barlow Condensed',sans-serif">${sec.items.length} itens</div>
+  </div>
+  ${itemsHTML}
+  <button onclick="adminAddItem(${si})" style="width:100%;background:transparent;border:1.5px dashed #1E3050;border-radius:8px;padding:9px;color:#4A6080;cursor:pointer;font-size:12px;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px;margin-top:4px;touch-action:manipulation">＋ ADICIONAR ITEM</button>
+</div>`;
+  });
+
+  // ── Status banner ──
+  const totalItens=editingSC.reduce((a,s)=>a+s.items.length,0);
+  const hasChanges=JSON.stringify(editingSC)!==JSON.stringify(getSC());
+  const banner=customSC
+    ?`<div style="background:#071C0F;border:1px solid #16A34A;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#86EFAC">✅ Checklist personalizado ativo · ${totalItens} itens em ${editingSC.length} seções</div>`
+    :`<div style="background:#1C1408;border:1px solid #854D0E;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#FDE68A">⚠ Checklist padrão em uso. Edite e salve para personalizar permanentemente.</div>`;
+
+  root.innerHTML=`<div class="page">${hdr}${tabs}${vehFilterBar}
+<div style="padding:14px;padding-bottom:90px">
+  ${banner}
+  <div style="font-size:10px;color:#2A4060;letter-spacing:.5px;margin-bottom:12px;font-family:'Barlow Condensed',sans-serif">
+    ↑↓ Reordenar · ✏ Editar · ↗ Realocar para outra seção · ✕ Excluir
+  </div>
+  ${sectionsHTML||'<div style="text-align:center;padding:40px 0;color:#4A6080">Nenhuma seção encontrada para este filtro.</div>'}
+</div>
+<div style="position:fixed;bottom:0;left:0;right:0;background:#07101A;border-top:1px solid #1E3050;padding:12px 14px;padding-bottom:max(12px,env(safe-area-inset-bottom));display:flex;gap:8px;z-index:20">
+  <button onclick="adminResetChecklist()" class="btn-gray" style="flex:1;font-size:13px">↺ Padrão</button>
+  <button id="btn-save-ck" onclick="adminSaveChecklist()" class="btn-red" style="flex:2;font-size:13px" ${hasChanges?'':'disabled'}>💾 SALVAR CHECKLIST</button>
+</div>
+</div>`;
+}
+
+// ════════════════════════════════════
 //  RENDER
 // ════════════════════════════════════
 function render(){
@@ -797,7 +1171,7 @@ ${userProfile?.admin?`<button onclick="loadAdmin()" class="btn-gray" style="marg
 </div>
 ${!identOk()?`<div style="background:#1C1408;border:1px solid #854D0E;border-radius:8px;padding:10px;margin-bottom:10px;font-size:12px;color:#FDE68A">⚠ Preencha Nome Completo e Graduação para iniciar.</div>`:''}
 <button id="btn-start" onclick="startNew()" class="btn-red" ${selVids.length===0||!identOk()?'disabled':''}>INICIAR CONFERÊNCIA →</button>
-<button onclick="screen='history';render();" class="btn-gray" style="margin-top:8px;border-color:#334155">
+<button onclick="setState({screen:'history'})" class="btn-gray" style="margin-top:8px;border-color:#334155">
   📋 HISTÓRICO ${history_cbm.length>0?'('+history_cbm.length+' registros)':''}
 </button>
 </div></div>`;
@@ -887,45 +1261,7 @@ ${ncs.length?`<button onclick="gerarParte()" class="btn-gold">📄 GERAR PARTE (
   }
 
   // ── ADMIN ─────────────────────
-  if(screen==='admin'){
-    const pending=allUsers.filter(u=>!u.aprovado);
-    const active=allUsers.filter(u=>u.aprovado);
-    const rankOpts=['Soldado QPBM','2º Sgt QPBM','1º Sgt QPBM','Sub Ten QPBM','Ten CBM','Asp CBM'];
-    const userForm=(u,isPending)=>`
-    <div class="card" style="margin-bottom:10px;${isPending?'border-color:#854D0E':''}">
-      <div style="font-size:11px;color:#4A6080;margin-bottom:8px">📧 ${esc(u.email)}</div>
-      <input id="adm_nome_${u.uid}" type="text" placeholder="Nome Completo *" value="${esc(u.nome||'')}">
-      <input id="adm_guerra_${u.uid}" type="text" placeholder="Nome de Guerra" value="${esc(u.guerra||'')}" style="color:#FFD700;font-weight:700">
-      <select id="adm_rank_${u.uid}">
-        <option value="">Graduação *</option>
-        ${rankOpts.map(r=>`<option value="${r}" ${u.rank===r?'selected':''}>${r}</option>`).join('')}
-      </select>
-      <input id="adm_re_${u.uid}" type="text" placeholder="Id.Func" value="${esc(u.re||'')}">
-      ${isPending
-        ?`<div style="display:flex;gap:8px;margin-top:4px">
-             <button onclick="approveUser('${u.uid}')" class="btn-red" style="flex:2">✓ APROVAR</button>
-             <button onclick="deleteUser('${u.uid}','${u.email}')" style="flex:1;background:#1C0808;color:#FCA5A5;border:1px solid #7F1D1D;border-radius:10px;padding:13px 0;font-size:13px;font-weight:700;cursor:pointer;font-family:'Barlow Condensed',sans-serif;min-height:44px">🗑 Excluir</button>
-           </div>`
-        :`<div style="display:flex;gap:8px;margin-top:4px">
-           <button onclick="updateUserProfile('${u.uid}')" class="btn-gray" style="flex:2">💾 Atualizar</button>
-           <button onclick="revokeUser('${u.uid}')" style="flex:1;background:#1C0808;color:#FCA5A5;border:1px solid #7F1D1D;border-radius:10px;padding:13px 0;font-size:13px;font-weight:700;cursor:pointer;font-family:'Barlow Condensed',sans-serif">Revogar</button>
-         </div>`
-      }
-    </div>`;
-    root.innerHTML=`<div class="page">
-<div style="background:linear-gradient(160deg,#0D1825,#131F32);padding:16px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1E3050;position:sticky;top:0;z-index:10">
-  <button onclick="screen='home';render();" style="background:transparent;border:none;color:#7A9ABC;cursor:pointer;font-size:22px;padding:0 8px 0 0">←</button>
-  <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;letter-spacing:1px">⚙️ PAINEL ADMIN</div>
-  <div style="width:40px"></div>
-</div>
-<div style="padding:14px">
-  ${pending.length?`<div class="label" style="color:#FBBF24">⏳ Aguardando Aprovação (${pending.length})</div>${pending.map(u=>userForm(u,true)).join('')}`:''}
-  <div class="label">✅ Militares Autorizados (${active.length})</div>
-  ${active.length?active.map(u=>userForm(u,false)).join(''):'<div style="color:#4A6080;font-size:13px">Nenhum militar autorizado ainda.</div>'}
-</div>
-</div>`;
-    return;
-  }
+  if(screen==='admin'){renderAdmin();return;}
 
   // ── HISTORY ────────────────────
   if(screen==='history'){
@@ -978,7 +1314,7 @@ ${ncs.length?`<button onclick="gerarParte()" class="btn-gold">📄 GERAR PARTE (
 
     root.innerHTML=`<div class="page">
 <div style="background:linear-gradient(160deg,#0D1825,#131F32);padding:16px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1E3050;position:sticky;top:0;z-index:10">
-  <button onclick="screen='home';render();" style="background:transparent;border:none;color:#7A9ABC;cursor:pointer;font-size:22px;padding:0 8px 0 0">←</button>
+  <button onclick="setState({screen:'home'})" style="background:transparent;border:none;color:#7A9ABC;cursor:pointer;font-size:22px;padding:0 8px 0 0">←</button>
   <div style="font-size:18px;font-weight:900;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px">📋 HISTÓRICO</div>
   <button onclick="clearHistory()" style="background:transparent;border:1px solid #334155;border-radius:6px;padding:4px 10px;color:#EF4444;cursor:pointer;font-size:11px;font-family:'Barlow Condensed',sans-serif">LIMPAR</button>
 </div>
@@ -1126,6 +1462,7 @@ fbAuth.onAuthStateChanged(async user=>{
     };
     authState='app';
     await loadHistory();
+    await loadCustomChecklist();
     load();
     render();
   }catch(e){
