@@ -1205,16 +1205,18 @@ ${ncs.length?`<button onclick="gerarParte()" class="btn-gold">📄 GERAR PARTE (
           <div style="font-size:12px;margin-top:6px">O histórico é preenchido automaticamente ao finalizar uma conferência.</div>
         </div>`
       :history_cbm.map(e=>{
-        const vBadges=e.viaturas.map(v=>`<span style="background:#1E3050;border-radius:4px;padding:2px 8px;font-size:11px;color:#94A3B8">${esc(v)}</span>`).join('');
-        const ncBlock=e.ncs.length===0
+        const viaturas=e.viaturas||[];
+        const ncs=e.ncs||[];
+        const vBadges=viaturas.map(v=>`<span style="background:#1E3050;border-radius:4px;padding:2px 8px;font-size:11px;color:#94A3B8">${esc(v)}</span>`).join('');
+        const ncBlock=ncs.length===0
           ?`<div style="color:#22C55E;font-size:12px;margin-top:8px">✅ Sem não conformidades</div>`
           :`<div style="margin-top:8px">
               <button onclick="toggleHistoryNC(${e.id})"
                 style="background:#1C0808;border:1px solid #7F1D1D;border-radius:6px;padding:6px 12px;color:#FCA5A5;font-size:12px;cursor:pointer;width:100%;text-align:left;font-family:inherit">
-                ⚠ ${e.ncs.length} não conformidade(s) — toque para ver
+                ⚠ ${ncs.length} não conformidade(s) — toque para ver
               </button>
               <div id="hnc_${e.id}" style="display:none;margin-top:6px">
-                ${e.ncs.map(nc=>`<div style="background:#1C0808;border:1px solid #7F1D1D;border-radius:6px;padding:8px;margin-bottom:6px">
+                ${ncs.map(nc=>`<div style="background:#1C0808;border:1px solid #7F1D1D;border-radius:6px;padding:8px;margin-bottom:6px">
                   <div style="font-size:10px;color:#EF4444;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px">${nc.veh==='SOP'?'Sala':esc(nc.veh)} — ${esc(nc.sec)}</div>
                   <div style="font-size:13px;font-weight:600;margin-top:2px">${esc(nc.name)} <span style="color:#4A6080;font-size:11px">(${esc(nc.qty)})</span></div>
                   ${nc.obs?`<div style="font-size:11px;color:#FCA5A5;margin-top:4px">› ${esc(nc.obs)}</div>`:''}
@@ -1224,15 +1226,15 @@ ${ncs.length?`<button onclick="gerarParte()" class="btn-gold">📄 GERAR PARTE (
         return `<div class="card">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
             <div style="flex:1;min-width:0">
-              <div style="font-size:11px;color:#4A6080;margin-bottom:2px">📅 ${fmtDate(e.date)}</div>
-              <div style="font-weight:700;font-size:15px;font-family:'Barlow Condensed',sans-serif">${esc(e.ident.name)}</div>
-              ${e.ident.guerra?`<div style="font-size:13px;color:#FFD700;font-weight:700">${esc(e.ident.guerra)}</div>`:''}
-              <div style="font-size:12px;color:#94A3B8">${esc(e.ident.rank)}${e.ident.re?' · Id.Func: '+esc(e.ident.re):''}</div>
+              <div style="font-size:11px;color:#4A6080;margin-bottom:2px">📅 ${fmtDate(e.date||new Date().toISOString())}</div>
+              <div style="font-weight:700;font-size:15px;font-family:'Barlow Condensed',sans-serif">${esc((e.ident||{}).name||'—')}</div>
+              ${(e.ident||{}).guerra?`<div style="font-size:13px;color:#FFD700;font-weight:700">${esc(e.ident.guerra)}</div>`:''}
+              <div style="font-size:12px;color:#94A3B8">${esc((e.ident||{}).rank||'')}</div>
             </div>
             <div style="text-align:right;flex-shrink:0">
-              <div style="font-size:32px;font-weight:900;color:${pctColor(e.pct)};font-family:'Barlow Condensed',sans-serif;line-height:1">${e.pct}%</div>
-              <div style="font-size:11px;color:#4A6080">${e.done}/${e.total} itens</div>
-              <div style="font-size:11px;margin-top:2px;color:${e.ncs.length?'#EF4444':'#22C55E'}">${e.ncs.length?'⚠ '+e.ncs.length+' NC':'✓ OK'}</div>
+              <div style="font-size:32px;font-weight:900;color:${pctColor(e.pct||0)};font-family:'Barlow Condensed',sans-serif;line-height:1">${e.pct||0}%</div>
+              <div style="font-size:11px;color:#4A6080">${e.done||0}/${e.total||0} itens</div>
+              <div style="font-size:11px;margin-top:2px;color:${ncs.length?'#EF4444':'#22C55E'}">${ncs.length?'⚠ '+ncs.length+' NC':'✓ OK'}</div>
             </div>
           </div>
           <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px">${vBadges}</div>
